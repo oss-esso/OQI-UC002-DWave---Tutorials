@@ -10,6 +10,7 @@ These tutorials teach you how to:
 3. Convert real-world scenarios into QUBO formulations
 4. Integrate with D-Wave solvers (simulator and QPU)
 5. Implement complete end-to-end workflows
+6. Use Constrained Quadratic Models (CQM) with hard constraints
 
 ## Prerequisites
 
@@ -128,6 +129,28 @@ python tutorial_05_complete_workflow.py
 - Solution validation
 - Best practices
 
+### Tutorial 6: Scenario to CQM (Constrained Quadratic Model)
+**File:** `tutorial_06_scenario_to_cqm.py`
+
+Learn CQM formulation with hard constraints:
+- Understanding CQM vs BQM differences
+- Using Integer and Binary variables together
+- Adding hard constraints (always satisfied)
+- No penalty weight tuning needed
+- When to use CQM over BQM
+
+**Run:**
+```bash
+python tutorial_06_scenario_to_cqm.py
+```
+
+**Key Concepts:**
+- CQM hard constraints vs BQM soft penalties
+- Multi-type variables (Binary, Integer, Real)
+- LeapHybridCQMSampler usage
+- Feasibility guarantees
+- Advanced constraint formulation
+
 ## Running the Tutorials
 
 ### Individual Tutorials
@@ -138,6 +161,7 @@ python tutorial_02_qubo_basics.py
 python tutorial_03_scenario_to_qubo.py
 python tutorial_04_dwave_integration.py
 python tutorial_05_complete_workflow.py
+python tutorial_06_scenario_to_cqm.py
 ```
 
 ### Run All Tests
@@ -234,6 +258,13 @@ Best solution found:
 - Use builder classes for complex QUBO formulations
 - Test with multiple samplers to verify results
 - Always interpret solutions in the original problem context
+
+### Tutorial 6
+- CQM provides hard constraints (always satisfied)
+- No penalty weight tuning required
+- Supports Integer and Real variables alongside Binary
+- Use LeapHybridCQMSampler (requires D-Wave API)
+- Better when feasibility is critical (constraints MUST be met)
 
 ## Troubleshooting
 
