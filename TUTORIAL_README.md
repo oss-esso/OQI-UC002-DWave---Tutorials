@@ -151,6 +151,37 @@ python tutorial_06_scenario_to_cqm.py
 - Feasibility guarantees
 - Advanced constraint formulation
 
+### Tutorial 7: QAOA with Q#
+**File:** `tutorial_07_qaoa_qsharp.py`
+
+Learn gate-based quantum optimization as alternative to annealing:
+- QAOA vs Quantum Annealing comparison
+- MaxCut problem formulation
+- Quantum circuit structure (cost + mixer Hamiltonians)
+- Q# implementation with Azure Quantum
+- Classical-quantum hybrid optimization loop
+- When to use QAOA vs D-Wave
+
+**Additional Files:**
+- `QAOA.qs`: Q# implementation of QAOA circuits
+- `qaoa_integration.py`: Python integration and examples
+
+**Run:**
+```bash
+# Tutorial (conceptual)
+python tutorial_07_qaoa_qsharp.py
+
+# Integration example (requires Q# setup)
+python qaoa_integration.py
+```
+
+**Key Concepts:**
+- Gate-based quantum computing
+- Parameterized quantum circuits
+- Variational quantum algorithms
+- Universal quantum computers
+- Azure Quantum platform
+
 ## Running the Tutorials
 
 ### Individual Tutorials
@@ -162,6 +193,7 @@ python tutorial_03_scenario_to_qubo.py
 python tutorial_04_dwave_integration.py
 python tutorial_05_complete_workflow.py
 python tutorial_06_scenario_to_cqm.py
+python tutorial_07_qaoa_qsharp.py
 ```
 
 ### Run All Tests
@@ -184,19 +216,27 @@ Switch between simulator and real quantum hardware with minimal code changes:
 # Development (free, local)
 sampler = dimod.SimulatedAnnealingSampler()
 
-# Production (requires token)
+# Production (D-Wave)
 from dwave.system import DWaveSampler, EmbeddingComposite
 sampler = EmbeddingComposite(DWaveSampler())
+
+# Production (Azure Quantum QAOA)
+from azure.quantum import Workspace
+workspace = Workspace(...)
+backend = workspace.get_targets("ionq.simulator")
 ```
 
 ### Configuration Management
 ```python
-# Set API token as environment variable (Windows PowerShell)
+# D-Wave: Set API token as environment variable (Windows PowerShell)
 $env:DWAVE_API_TOKEN = 'your-token-here'
 
 # Or use dwave CLI
 dwave config create
 dwave ping
+
+# Azure Quantum: Configure workspace
+# See tutorial_07 for details
 ```
 
 ## Problem Sizes
@@ -259,12 +299,23 @@ Best solution found:
 - Test with multiple samplers to verify results
 - Always interpret solutions in the original problem context
 
-### Tutorial 6
+### Tutorial 6: Scenario to CQM
 - CQM provides hard constraints (always satisfied)
 - No penalty weight tuning required
 - Supports Integer and Real variables alongside Binary
 - Use LeapHybridCQMSampler (requires D-Wave API)
 - Better when feasibility is critical (constraints MUST be met)
+- PuLP integration for validating formulations locally
+- Use continuous area variables instead of binary selection
+
+### Tutorial 7: QAOA with Q#
+- QAOA is gate-based alternative to quantum annealing
+- Uses universal quantum computers (not specialized D-Wave hardware)
+- Parameterized quantum circuits + classical optimization
+- Solves same QUBO/Ising problems with different paradigm
+- Runs on Azure Quantum, IonQ, Rigetti, etc.
+- More flexible but currently limited in scale
+- Educational: bridges annealing and gate-based quantum computing
 
 ## Troubleshooting
 
