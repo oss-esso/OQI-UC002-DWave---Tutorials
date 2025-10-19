@@ -37,26 +37,24 @@ Y = {}
 
 for f in farms:
     for c in crops:
-        A[(f, c)] = Real(f"A_{f}_{c}", lower_bound=A_min[c], upper_bound=L[f])
+        A[(f, c)] = Real(f"A_{f}_{c}", lower_bound=0, upper_bound=L[f])
         Y[(f, c)] = Binary(f"Y_{f}_{c}")
 
 
 
-#Formulation is in this case Sum - Z*Total_Area >= 0
-
-Z = Real("Z", lower_bound=-1e6, upper_bound=1e6)
+# Direct objective formulation: maximize the weighted sum
+# Since we're dividing by a constant (total_area), we can maximize the numerator directly
+# This is equivalent to maximizing numerator/total_area
 
 total_area = sum(L[f] for f in farms)
 
-numerator = sum(
+objective = sum(
     weights['w_1'] * N[c] * A[(f, c)] +
     weights['w_2'] * D[c] * A[(f, c)] -
     weights['w_3'] * E[c] * A[(f, c)] +
     weights['w_4'] * P[c] * A[(f, c)]
     for f in farms for c in crops
 )
-#Division by zero
-cqm.add_constraint(numerator - Z * total_area >= 0, label="Efficiency_Constraint")
 
 #Land availability constraints
 for f in farms:
@@ -85,7 +83,8 @@ for g, crops_group in food_groups.items():
         )
 
 #Solve the CQM
-cqm.set_objective(Z)
+# Note: CQM minimizes by default, so we negate the objective to maximize
+cqm.set_objective(-objective)
 
 sampler = LeapHybridCQMSampler(token = '45FS-23cfb48dca2296ed24550846d2e7356eb6c19551')
 sampleset = sampler.sample_cqm(cqm)
