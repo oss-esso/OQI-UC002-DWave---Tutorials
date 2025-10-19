@@ -1,0 +1,1371 @@
+{
+  "scenario": "full",
+  "timestamp": "20251019_221138",
+  "farms": [
+    "Farm1",
+    "Farm2",
+    "Farm3",
+    "Farm4",
+    "Farm5"
+  ],
+  "foods": [
+    "Beef",
+    "Pork",
+    "Apple",
+    "Guava",
+    "Peanuts",
+    "Tempeh",
+    "Corn",
+    "Potato",
+    "Eggplant",
+    "Long bean"
+  ],
+  "foods_data": {
+    "Beef": {
+      "nutritional_value": 0.596776269274647,
+      "nutrient_density": 0.542364007335388,
+      "environmental_impact": 0.446755320532178,
+      "affordability": 0.024143616814191367,
+      "sustainability": 0.0038109319679211114
+    },
+    "Pork": {
+      "nutritional_value": 0.58397142438088,
+      "nutrient_density": 0.5233369179724829,
+      "environmental_impact": 0.0008215898957644851,
+      "affordability": 0.3743257294562422,
+      "sustainability": 0.016529337989578632
+    },
+    "Apple": {
+      "nutritional_value": 0.370950683524887,
+      "nutrient_density": 0.0883742942027993,
+      "environmental_impact": 0.00450094378731044,
+      "affordability": 0.0133234414184075,
+      "sustainability": 0.0776226245222271
+    },
+    "Guava": {
+      "nutritional_value": 0.515649048410448,
+      "nutrient_density": 0.310151093648459,
+      "environmental_impact": 0.01203465056031739,
+      "affordability": 0.05698859461576806,
+      "sustainability": 0.17909752401980733
+    },
+    "Peanuts": {
+      "nutritional_value": 0.465030165121097,
+      "nutrient_density": 0.42680796035967705,
+      "environmental_impact": 0.003095037969114476,
+      "affordability": 0.26777744110925855,
+      "sustainability": 0.05464126841587344
+    },
+    "Tempeh": {
+      "nutritional_value": 0.539133838810288,
+      "nutrient_density": 0.394557298273002,
+      "environmental_impact": 0.02013317100578817,
+      "affordability": 0.22481852948880923,
+      "sustainability": 0.111485809201798
+    },
+    "Corn": {
+      "nutritional_value": 0.390821804048269,
+      "nutrient_density": 0.153545052538761,
+      "environmental_impact": 0.011303012475140452,
+      "affordability": 0.4179046427406815,
+      "sustainability": 0.12140786437415593
+    },
+    "Potato": {
+      "nutritional_value": 0.47817326934510296,
+      "nutrient_density": 0.305254999388969,
+      "environmental_impact": 0.011250087968459752,
+      "affordability": 0.09344042579664129,
+      "sustainability": 0.12462514927376565
+    },
+    "Eggplant": {
+      "nutritional_value": 0.39673727593325403,
+      "nutrient_density": 0.17312506575447903,
+      "environmental_impact": 0.0034537472798519694,
+      "affordability": 0.021682993801565954,
+      "sustainability": 0.05971914400834926
+    },
+    "Long bean": {
+      "nutritional_value": 0.561574671432357,
+      "nutrient_density": 0.412719430106662,
+      "environmental_impact": 0.004716607451884361,
+      "affordability": 0.36344203355069127,
+      "sustainability": 0.08211347293739286
+    }
+  },
+  "food_groups": {
+    "Animal-source foods": [
+      "Beef",
+      "Pork"
+    ],
+    "Fruits": [
+      "Apple",
+      "Guava"
+    ],
+    "Pulses, nuts, and seeds": [
+      "Peanuts",
+      "Tempeh"
+    ],
+    "Starchy staples": [
+      "Corn",
+      "Potato"
+    ],
+    "Vegetables": [
+      "Eggplant",
+      "Long bean"
+    ]
+  },
+  "config": {
+    "parameters": {
+      "land_availability": {
+        "Farm1": 50,
+        "Farm2": 75,
+        "Farm3": 100,
+        "Farm4": 80,
+        "Farm5": 50
+      },
+      "social_benefit": {
+        "Farm1": 0.2,
+        "Farm2": 0.25,
+        "Farm3": 0.15,
+        "Farm4": 0.2,
+        "Farm5": 0.1
+      },
+      "minimum_planting_area": {
+        "Mango": 0.000929,
+        "Papaya": 0.0004,
+        "Orange": 0.00581,
+        "Banana": 0.00595,
+        "Guava": 0.000929,
+        "Watermelon": 0.000334,
+        "Apple": 0.00372,
+        "Avocado": 0.00836,
+        "Durian": 0.01,
+        "Corn": 0.000183,
+        "Potato": 9e-05,
+        "Tofu": 1e-05,
+        "Tempeh": 1e-05,
+        "Peanuts": 3e-05,
+        "Chickpeas": 2e-05,
+        "Pumpkin": 0.0001,
+        "Spinach": 9e-05,
+        "Tomatoes": 0.000105,
+        "Long bean": 9e-05,
+        "Cabbage": 0.00025,
+        "Eggplant": 0.00036,
+        "Cucumber": 0.0005,
+        "Egg": 1.9e-05,
+        "Beef": 0.7284,
+        "Lamb": 0.025,
+        "Pork": 0.0162,
+        "Chicken": 0.001
+      },
+      "max_percentage_per_crop": {
+        "Mango": 1.0,
+        "Papaya": 1.0,
+        "Orange": 1.0,
+        "Banana": 1.0,
+        "Guava": 1.0,
+        "Watermelon": 1.0,
+        "Apple": 1.0,
+        "Avocado": 1.0,
+        "Durian": 1.0,
+        "Corn": 1.0,
+        "Potato": 1.0,
+        "Tofu": 1.0,
+        "Tempeh": 1.0,
+        "Peanuts": 1.0,
+        "Chickpeas": 0.5,
+        "Pumpkin": 1.0,
+        "Spinach": 1.0,
+        "Tomatoes": 1.0,
+        "Long bean": 0.1,
+        "Cabbage": 1.0,
+        "Eggplant": 1.0,
+        "Cucumber": 1.0,
+        "Egg": 1.0,
+        "Beef": 1.0,
+        "Lamb": 1.0,
+        "Pork": 1.0,
+        "Chicken": 1.0
+      },
+      "food_group_constraints": {
+        "Animal-source foods": {
+          "min_foods": 1,
+          "max_foods": 2
+        },
+        "Fruits": {
+          "min_foods": 1,
+          "max_foods": 2
+        },
+        "Pulses, nuts, and seeds": {
+          "min_foods": 1,
+          "max_foods": 2
+        },
+        "Starchy staples": {
+          "min_foods": 1,
+          "max_foods": 2
+        },
+        "Vegetables": {
+          "min_foods": 1,
+          "max_foods": 2
+        }
+      },
+      "weights": {
+        "nutritional_value": 0.25,
+        "nutrient_density": 0.2,
+        "environmental_impact": 0.25,
+        "affordability": 0.15,
+        "sustainability": 0.15
+      }
+    },
+    "benders_tolerance": 0.001,
+    "benders_max_iterations": 100,
+    "pulp_time_limit": 120,
+    "use_multi_cut": true,
+    "use_trust_region": true,
+    "use_anticycling": true,
+    "use_norm_cuts": true,
+    "quantum_settings": {
+      "max_qubits": 20,
+      "use_qaoa_squared": true,
+      "force_qaoa_squared": true
+    }
+  },
+  "constraint_metadata": {
+    "land_availability": {
+      "Farm1": {
+        "type": "land_availability",
+        "farm": "Farm1",
+        "max_land": 50
+      },
+      "Farm2": {
+        "type": "land_availability",
+        "farm": "Farm2",
+        "max_land": 75
+      },
+      "Farm3": {
+        "type": "land_availability",
+        "farm": "Farm3",
+        "max_land": 100
+      },
+      "Farm4": {
+        "type": "land_availability",
+        "farm": "Farm4",
+        "max_land": 80
+      },
+      "Farm5": {
+        "type": "land_availability",
+        "farm": "Farm5",
+        "max_land": 50
+      }
+    },
+    "min_area_if_selected": {
+      "('Farm1', 'Beef')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Beef",
+        "min_area": 0.7284
+      },
+      "('Farm1', 'Pork')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Pork",
+        "min_area": 0.0162
+      },
+      "('Farm1', 'Apple')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Apple",
+        "min_area": 0.00372
+      },
+      "('Farm1', 'Guava')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Guava",
+        "min_area": 0.000929
+      },
+      "('Farm1', 'Peanuts')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Peanuts",
+        "min_area": 3e-05
+      },
+      "('Farm1', 'Tempeh')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Tempeh",
+        "min_area": 1e-05
+      },
+      "('Farm1', 'Corn')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Corn",
+        "min_area": 0.000183
+      },
+      "('Farm1', 'Potato')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Potato",
+        "min_area": 9e-05
+      },
+      "('Farm1', 'Eggplant')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Eggplant",
+        "min_area": 0.00036
+      },
+      "('Farm1', 'Long bean')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm1",
+        "food": "Long bean",
+        "min_area": 9e-05
+      },
+      "('Farm2', 'Beef')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Beef",
+        "min_area": 0.7284
+      },
+      "('Farm2', 'Pork')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Pork",
+        "min_area": 0.0162
+      },
+      "('Farm2', 'Apple')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Apple",
+        "min_area": 0.00372
+      },
+      "('Farm2', 'Guava')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Guava",
+        "min_area": 0.000929
+      },
+      "('Farm2', 'Peanuts')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Peanuts",
+        "min_area": 3e-05
+      },
+      "('Farm2', 'Tempeh')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Tempeh",
+        "min_area": 1e-05
+      },
+      "('Farm2', 'Corn')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Corn",
+        "min_area": 0.000183
+      },
+      "('Farm2', 'Potato')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Potato",
+        "min_area": 9e-05
+      },
+      "('Farm2', 'Eggplant')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Eggplant",
+        "min_area": 0.00036
+      },
+      "('Farm2', 'Long bean')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm2",
+        "food": "Long bean",
+        "min_area": 9e-05
+      },
+      "('Farm3', 'Beef')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Beef",
+        "min_area": 0.7284
+      },
+      "('Farm3', 'Pork')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Pork",
+        "min_area": 0.0162
+      },
+      "('Farm3', 'Apple')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Apple",
+        "min_area": 0.00372
+      },
+      "('Farm3', 'Guava')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Guava",
+        "min_area": 0.000929
+      },
+      "('Farm3', 'Peanuts')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Peanuts",
+        "min_area": 3e-05
+      },
+      "('Farm3', 'Tempeh')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Tempeh",
+        "min_area": 1e-05
+      },
+      "('Farm3', 'Corn')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Corn",
+        "min_area": 0.000183
+      },
+      "('Farm3', 'Potato')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Potato",
+        "min_area": 9e-05
+      },
+      "('Farm3', 'Eggplant')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Eggplant",
+        "min_area": 0.00036
+      },
+      "('Farm3', 'Long bean')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm3",
+        "food": "Long bean",
+        "min_area": 9e-05
+      },
+      "('Farm4', 'Beef')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Beef",
+        "min_area": 0.7284
+      },
+      "('Farm4', 'Pork')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Pork",
+        "min_area": 0.0162
+      },
+      "('Farm4', 'Apple')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Apple",
+        "min_area": 0.00372
+      },
+      "('Farm4', 'Guava')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Guava",
+        "min_area": 0.000929
+      },
+      "('Farm4', 'Peanuts')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Peanuts",
+        "min_area": 3e-05
+      },
+      "('Farm4', 'Tempeh')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Tempeh",
+        "min_area": 1e-05
+      },
+      "('Farm4', 'Corn')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Corn",
+        "min_area": 0.000183
+      },
+      "('Farm4', 'Potato')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Potato",
+        "min_area": 9e-05
+      },
+      "('Farm4', 'Eggplant')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Eggplant",
+        "min_area": 0.00036
+      },
+      "('Farm4', 'Long bean')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm4",
+        "food": "Long bean",
+        "min_area": 9e-05
+      },
+      "('Farm5', 'Beef')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Beef",
+        "min_area": 0.7284
+      },
+      "('Farm5', 'Pork')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Pork",
+        "min_area": 0.0162
+      },
+      "('Farm5', 'Apple')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Apple",
+        "min_area": 0.00372
+      },
+      "('Farm5', 'Guava')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Guava",
+        "min_area": 0.000929
+      },
+      "('Farm5', 'Peanuts')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Peanuts",
+        "min_area": 3e-05
+      },
+      "('Farm5', 'Tempeh')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Tempeh",
+        "min_area": 1e-05
+      },
+      "('Farm5', 'Corn')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Corn",
+        "min_area": 0.000183
+      },
+      "('Farm5', 'Potato')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Potato",
+        "min_area": 9e-05
+      },
+      "('Farm5', 'Eggplant')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Eggplant",
+        "min_area": 0.00036
+      },
+      "('Farm5', 'Long bean')": {
+        "type": "min_area_if_selected",
+        "farm": "Farm5",
+        "food": "Long bean",
+        "min_area": 9e-05
+      }
+    },
+    "max_area_if_selected": {
+      "('Farm1', 'Beef')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Beef",
+        "max_land": 50
+      },
+      "('Farm1', 'Pork')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Pork",
+        "max_land": 50
+      },
+      "('Farm1', 'Apple')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Apple",
+        "max_land": 50
+      },
+      "('Farm1', 'Guava')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Guava",
+        "max_land": 50
+      },
+      "('Farm1', 'Peanuts')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Peanuts",
+        "max_land": 50
+      },
+      "('Farm1', 'Tempeh')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Tempeh",
+        "max_land": 50
+      },
+      "('Farm1', 'Corn')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Corn",
+        "max_land": 50
+      },
+      "('Farm1', 'Potato')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Potato",
+        "max_land": 50
+      },
+      "('Farm1', 'Eggplant')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Eggplant",
+        "max_land": 50
+      },
+      "('Farm1', 'Long bean')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm1",
+        "food": "Long bean",
+        "max_land": 50
+      },
+      "('Farm2', 'Beef')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Beef",
+        "max_land": 75
+      },
+      "('Farm2', 'Pork')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Pork",
+        "max_land": 75
+      },
+      "('Farm2', 'Apple')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Apple",
+        "max_land": 75
+      },
+      "('Farm2', 'Guava')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Guava",
+        "max_land": 75
+      },
+      "('Farm2', 'Peanuts')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Peanuts",
+        "max_land": 75
+      },
+      "('Farm2', 'Tempeh')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Tempeh",
+        "max_land": 75
+      },
+      "('Farm2', 'Corn')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Corn",
+        "max_land": 75
+      },
+      "('Farm2', 'Potato')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Potato",
+        "max_land": 75
+      },
+      "('Farm2', 'Eggplant')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Eggplant",
+        "max_land": 75
+      },
+      "('Farm2', 'Long bean')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm2",
+        "food": "Long bean",
+        "max_land": 75
+      },
+      "('Farm3', 'Beef')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Beef",
+        "max_land": 100
+      },
+      "('Farm3', 'Pork')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Pork",
+        "max_land": 100
+      },
+      "('Farm3', 'Apple')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Apple",
+        "max_land": 100
+      },
+      "('Farm3', 'Guava')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Guava",
+        "max_land": 100
+      },
+      "('Farm3', 'Peanuts')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Peanuts",
+        "max_land": 100
+      },
+      "('Farm3', 'Tempeh')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Tempeh",
+        "max_land": 100
+      },
+      "('Farm3', 'Corn')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Corn",
+        "max_land": 100
+      },
+      "('Farm3', 'Potato')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Potato",
+        "max_land": 100
+      },
+      "('Farm3', 'Eggplant')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Eggplant",
+        "max_land": 100
+      },
+      "('Farm3', 'Long bean')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm3",
+        "food": "Long bean",
+        "max_land": 100
+      },
+      "('Farm4', 'Beef')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Beef",
+        "max_land": 80
+      },
+      "('Farm4', 'Pork')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Pork",
+        "max_land": 80
+      },
+      "('Farm4', 'Apple')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Apple",
+        "max_land": 80
+      },
+      "('Farm4', 'Guava')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Guava",
+        "max_land": 80
+      },
+      "('Farm4', 'Peanuts')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Peanuts",
+        "max_land": 80
+      },
+      "('Farm4', 'Tempeh')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Tempeh",
+        "max_land": 80
+      },
+      "('Farm4', 'Corn')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Corn",
+        "max_land": 80
+      },
+      "('Farm4', 'Potato')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Potato",
+        "max_land": 80
+      },
+      "('Farm4', 'Eggplant')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Eggplant",
+        "max_land": 80
+      },
+      "('Farm4', 'Long bean')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm4",
+        "food": "Long bean",
+        "max_land": 80
+      },
+      "('Farm5', 'Beef')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Beef",
+        "max_land": 50
+      },
+      "('Farm5', 'Pork')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Pork",
+        "max_land": 50
+      },
+      "('Farm5', 'Apple')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Apple",
+        "max_land": 50
+      },
+      "('Farm5', 'Guava')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Guava",
+        "max_land": 50
+      },
+      "('Farm5', 'Peanuts')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Peanuts",
+        "max_land": 50
+      },
+      "('Farm5', 'Tempeh')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Tempeh",
+        "max_land": 50
+      },
+      "('Farm5', 'Corn')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Corn",
+        "max_land": 50
+      },
+      "('Farm5', 'Potato')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Potato",
+        "max_land": 50
+      },
+      "('Farm5', 'Eggplant')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Eggplant",
+        "max_land": 50
+      },
+      "('Farm5', 'Long bean')": {
+        "type": "max_area_if_selected",
+        "farm": "Farm5",
+        "food": "Long bean",
+        "max_land": 50
+      }
+    },
+    "food_group_min": {
+      "('Animal-source foods', 'Farm1')": {
+        "type": "food_group_min",
+        "group": "Animal-source foods",
+        "farm": "Farm1",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm2')": {
+        "type": "food_group_min",
+        "group": "Animal-source foods",
+        "farm": "Farm2",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm3')": {
+        "type": "food_group_min",
+        "group": "Animal-source foods",
+        "farm": "Farm3",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm4')": {
+        "type": "food_group_min",
+        "group": "Animal-source foods",
+        "farm": "Farm4",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm5')": {
+        "type": "food_group_min",
+        "group": "Animal-source foods",
+        "farm": "Farm5",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Fruits', 'Farm1')": {
+        "type": "food_group_min",
+        "group": "Fruits",
+        "farm": "Farm1",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm2')": {
+        "type": "food_group_min",
+        "group": "Fruits",
+        "farm": "Farm2",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm3')": {
+        "type": "food_group_min",
+        "group": "Fruits",
+        "farm": "Farm3",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm4')": {
+        "type": "food_group_min",
+        "group": "Fruits",
+        "farm": "Farm4",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm5')": {
+        "type": "food_group_min",
+        "group": "Fruits",
+        "farm": "Farm5",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm1')": {
+        "type": "food_group_min",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm1",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm2')": {
+        "type": "food_group_min",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm2",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm3')": {
+        "type": "food_group_min",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm3",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm4')": {
+        "type": "food_group_min",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm4",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm5')": {
+        "type": "food_group_min",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm5",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Starchy staples', 'Farm1')": {
+        "type": "food_group_min",
+        "group": "Starchy staples",
+        "farm": "Farm1",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm2')": {
+        "type": "food_group_min",
+        "group": "Starchy staples",
+        "farm": "Farm2",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm3')": {
+        "type": "food_group_min",
+        "group": "Starchy staples",
+        "farm": "Farm3",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm4')": {
+        "type": "food_group_min",
+        "group": "Starchy staples",
+        "farm": "Farm4",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm5')": {
+        "type": "food_group_min",
+        "group": "Starchy staples",
+        "farm": "Farm5",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Vegetables', 'Farm1')": {
+        "type": "food_group_min",
+        "group": "Vegetables",
+        "farm": "Farm1",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm2')": {
+        "type": "food_group_min",
+        "group": "Vegetables",
+        "farm": "Farm2",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm3')": {
+        "type": "food_group_min",
+        "group": "Vegetables",
+        "farm": "Farm3",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm4')": {
+        "type": "food_group_min",
+        "group": "Vegetables",
+        "farm": "Farm4",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm5')": {
+        "type": "food_group_min",
+        "group": "Vegetables",
+        "farm": "Farm5",
+        "min_foods": 1,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      }
+    },
+    "food_group_max": {
+      "('Animal-source foods', 'Farm1')": {
+        "type": "food_group_max",
+        "group": "Animal-source foods",
+        "farm": "Farm1",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm2')": {
+        "type": "food_group_max",
+        "group": "Animal-source foods",
+        "farm": "Farm2",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm3')": {
+        "type": "food_group_max",
+        "group": "Animal-source foods",
+        "farm": "Farm3",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm4')": {
+        "type": "food_group_max",
+        "group": "Animal-source foods",
+        "farm": "Farm4",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Animal-source foods', 'Farm5')": {
+        "type": "food_group_max",
+        "group": "Animal-source foods",
+        "farm": "Farm5",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Beef",
+          "Pork"
+        ]
+      },
+      "('Fruits', 'Farm1')": {
+        "type": "food_group_max",
+        "group": "Fruits",
+        "farm": "Farm1",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm2')": {
+        "type": "food_group_max",
+        "group": "Fruits",
+        "farm": "Farm2",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm3')": {
+        "type": "food_group_max",
+        "group": "Fruits",
+        "farm": "Farm3",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm4')": {
+        "type": "food_group_max",
+        "group": "Fruits",
+        "farm": "Farm4",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Fruits', 'Farm5')": {
+        "type": "food_group_max",
+        "group": "Fruits",
+        "farm": "Farm5",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Apple",
+          "Guava"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm1')": {
+        "type": "food_group_max",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm1",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm2')": {
+        "type": "food_group_max",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm2",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm3')": {
+        "type": "food_group_max",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm3",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm4')": {
+        "type": "food_group_max",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm4",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Pulses, nuts, and seeds', 'Farm5')": {
+        "type": "food_group_max",
+        "group": "Pulses, nuts, and seeds",
+        "farm": "Farm5",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Peanuts",
+          "Tempeh"
+        ]
+      },
+      "('Starchy staples', 'Farm1')": {
+        "type": "food_group_max",
+        "group": "Starchy staples",
+        "farm": "Farm1",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm2')": {
+        "type": "food_group_max",
+        "group": "Starchy staples",
+        "farm": "Farm2",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm3')": {
+        "type": "food_group_max",
+        "group": "Starchy staples",
+        "farm": "Farm3",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm4')": {
+        "type": "food_group_max",
+        "group": "Starchy staples",
+        "farm": "Farm4",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Starchy staples', 'Farm5')": {
+        "type": "food_group_max",
+        "group": "Starchy staples",
+        "farm": "Farm5",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Corn",
+          "Potato"
+        ]
+      },
+      "('Vegetables', 'Farm1')": {
+        "type": "food_group_max",
+        "group": "Vegetables",
+        "farm": "Farm1",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm2')": {
+        "type": "food_group_max",
+        "group": "Vegetables",
+        "farm": "Farm2",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm3')": {
+        "type": "food_group_max",
+        "group": "Vegetables",
+        "farm": "Farm3",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm4')": {
+        "type": "food_group_max",
+        "group": "Vegetables",
+        "farm": "Farm4",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      },
+      "('Vegetables', 'Farm5')": {
+        "type": "food_group_max",
+        "group": "Vegetables",
+        "farm": "Farm5",
+        "max_foods": 2,
+        "foods_in_group": [
+          "Eggplant",
+          "Long bean"
+        ]
+      }
+    }
+  }
+}

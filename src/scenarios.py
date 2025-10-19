@@ -347,20 +347,27 @@ def _load_custom_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Di
 
 def _load_full_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:
     """Load food data and configuration from Excel for optimization."""
-    # Locate Excel file
+    # Locate Excel file - look in the Inputs directory relative to this file
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Determine drive letter from the script directory (e.g., "G:" or "H:")
-    drive = script_dir.split(os.sep)[0]
-    excel_path = os.path.join(drive, "\\Projects", "OQI-UC002-DWave", "Inputs", "Combined_Food_Data.xlsx")
+    project_root = os.path.dirname(script_dir)  # Go up one level from src/
+    excel_path = os.path.join(project_root, "Inputs", "Combined_Food_Data.xlsx")
+    
+    # If file doesn't exist in project, check if it exists and offer helpful message
+    if not os.path.exists(excel_path):
+        print(f"Excel file not found at: {excel_path}")
+        print("The 'full' scenario requires Combined_Food_Data.xlsx in the Inputs/ directory.")
+        print("Using 'intermediate' scenario as fallback...")
+        return _load_intermediate_food_data()
+    
     print(f"Loading food data from: {excel_path}")
     
     # Read Excel
     try:
         df = pd.read_excel(excel_path)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Excel file not found at {excel_path}")
     except Exception as e:
-        raise RuntimeError(f"Error reading Excel file: {e}")
+        print(f"Error reading Excel file: {e}")
+        print("Using 'intermediate' scenario as fallback...")
+        return _load_intermediate_food_data()
     
     # Map columns
     col_map = {

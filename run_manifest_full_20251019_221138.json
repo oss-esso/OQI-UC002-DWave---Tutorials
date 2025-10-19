@@ -1,0 +1,31 @@
+{
+  "scenario": "full",
+  "timestamp": "20251019_221138",
+  "cqm_path": "CQM_Models/cqm_full_20251019_221138.cqm",
+  "constraints_path": "Constraints/constraints_full_20251019_221138.json",
+  "pulp_path": "PuLP_Results/pulp_full_20251019_221138.json",
+  "dwave_path": "DWave_Results/dwave_full_20251019_221138.pickle",
+  "farms": [
+    "Farm1",
+    "Farm2",
+    "Farm3",
+    "Farm4",
+    "Farm5"
+  ],
+  "foods": [
+    "Beef",
+    "Pork",
+    "Apple",
+    "Guava",
+    "Peanuts",
+    "Tempeh",
+    "Corn",
+    "Potato",
+    "Eggplant",
+    "Long bean"
+  ],
+  "pulp_status": "Optimal",
+  "pulp_objective": 0.3090818115693767,
+  "dwave_feasible_count": 117,
+  "dwave_total_count": 124
+}
