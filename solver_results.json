@@ -1,0 +1,429 @@
+{
+  "results": {
+    "PuLP": {
+      "status": "Optimal",
+      "objective_value": 81.59499999999998,
+      "solution": {
+        "Farm1": {
+          "Wheat": 10.0,
+          "Rice": 12.0,
+          "Soybeans": 25.0,
+          "Potatoes": 5.0,
+          "Apples": 15.0,
+          "Tomatoes": 8.0
+        },
+        "Farm2": {
+          "Wheat": 20.0,
+          "Rice": 12.0,
+          "Soybeans": 40.0,
+          "Potatoes": 5.0,
+          "Apples": 15.0,
+          "Tomatoes": 8.0
+        }
+      },
+      "binary_solution": {
+        "Farm1": {
+          "Wheat": 1,
+          "Rice": 1,
+          "Soybeans": 1,
+          "Potatoes": 1,
+          "Apples": 1,
+          "Tomatoes": 1
+        },
+        "Farm2": {
+          "Wheat": 1,
+          "Rice": 1,
+          "Soybeans": 1,
+          "Potatoes": 1,
+          "Apples": 1,
+          "Tomatoes": 1
+        }
+      },
+      "solve_time": 0.07320618629455566,
+      "solver": "PuLP-CBC-GlobalCoordinated",
+      "global_foods_selected": 6
+    },
+    "CQM": {
+      "status": "ERROR",
+      "error": "D-Wave Ocean SDK not available",
+      "objective_value": null,
+      "solution": null,
+      "binary_solution": null,
+      "solve_time": 0,
+      "solver": "CQM-DWave"
+    },
+    "QUBO": {
+      "status": "ERROR",
+      "error": "D-Wave Ocean SDK not available",
+      "objective_value": null,
+      "solution": null,
+      "binary_solution": null,
+      "solve_time": 0,
+      "solver": "QUBO-DWave"
+    }
+  },
+  "validations": {
+    "PuLP": {
+      "valid": true,
+      "constraint_violations": [],
+      "constraint_details": {
+        "land_availability": {
+          "Farm1": {
+            "used_land": 75.0,
+            "available_land": 75,
+            "utilization_rate": 100.0,
+            "violated": false
+          },
+          "Farm2": {
+            "used_land": 100.0,
+            "available_land": 100,
+            "utilization_rate": 100.0,
+            "violated": false
+          }
+        },
+        "social_benefit": {
+          "Farm1": {
+            "used_land": 75.0,
+            "required_minimum": 15.0,
+            "social_benefit_rate": 0.2,
+            "violated": false
+          },
+          "Farm2": {
+            "used_land": 100.0,
+            "required_minimum": 20.0,
+            "social_benefit_rate": 0.2,
+            "violated": false
+          }
+        },
+        "planting_area": {
+          "Farm1_Wheat": {
+            "area": 10.0,
+            "planted": true,
+            "min_area": 10,
+            "max_area": 30.0,
+            "violations": []
+          },
+          "Farm1_Rice": {
+            "area": 12.0,
+            "planted": true,
+            "min_area": 12,
+            "max_area": 30.0,
+            "violations": []
+          },
+          "Farm1_Soybeans": {
+            "area": 25.0,
+            "planted": true,
+            "min_area": 7,
+            "max_area": 30.0,
+            "violations": []
+          },
+          "Farm1_Potatoes": {
+            "area": 5.0,
+            "planted": true,
+            "min_area": 5,
+            "max_area": 30.0,
+            "violations": []
+          },
+          "Farm1_Apples": {
+            "area": 15.0,
+            "planted": true,
+            "min_area": 15,
+            "max_area": 30.0,
+            "violations": []
+          },
+          "Farm1_Tomatoes": {
+            "area": 8.0,
+            "planted": true,
+            "min_area": 8,
+            "max_area": 30.0,
+            "violations": []
+          },
+          "Farm2_Wheat": {
+            "area": 20.0,
+            "planted": true,
+            "min_area": 10,
+            "max_area": 40.0,
+            "violations": []
+          },
+          "Farm2_Rice": {
+            "area": 12.0,
+            "planted": true,
+            "min_area": 12,
+            "max_area": 40.0,
+            "violations": []
+          },
+          "Farm2_Soybeans": {
+            "area": 40.0,
+            "planted": true,
+            "min_area": 7,
+            "max_area": 40.0,
+            "violations": []
+          },
+          "Farm2_Potatoes": {
+            "area": 5.0,
+            "planted": true,
+            "min_area": 5,
+            "max_area": 40.0,
+            "violations": []
+          },
+          "Farm2_Apples": {
+            "area": 15.0,
+            "planted": true,
+            "min_area": 15,
+            "max_area": 40.0,
+            "violations": []
+          },
+          "Farm2_Tomatoes": {
+            "area": 8.0,
+            "planted": true,
+            "min_area": 8,
+            "max_area": 40.0,
+            "violations": []
+          }
+        },
+        "food_groups": {
+          "Farm1_Grains": {
+            "selected_foods": 2,
+            "min_required": 1,
+            "max_allowed": 2,
+            "foods_in_group": [
+              "Wheat",
+              "Rice"
+            ],
+            "selected_food_list": [
+              "Wheat",
+              "Rice"
+            ],
+            "violations": []
+          },
+          "Farm1_Legumes": {
+            "selected_foods": 2,
+            "min_required": 1,
+            "max_allowed": 2,
+            "foods_in_group": [
+              "Soybeans",
+              "Potatoes"
+            ],
+            "selected_food_list": [
+              "Soybeans",
+              "Potatoes"
+            ],
+            "violations": []
+          },
+          "Farm1_Fruits": {
+            "selected_foods": 2,
+            "min_required": 1,
+            "max_allowed": 2,
+            "foods_in_group": [
+              "Apples",
+              "Tomatoes"
+            ],
+            "selected_food_list": [
+              "Apples",
+              "Tomatoes"
+            ],
+            "violations": []
+          },
+          "Farm2_Grains": {
+            "selected_foods": 2,
+            "min_required": 1,
+            "max_allowed": 2,
+            "foods_in_group": [
+              "Wheat",
+              "Rice"
+            ],
+            "selected_food_list": [
+              "Wheat",
+              "Rice"
+            ],
+            "violations": []
+          },
+          "Farm2_Legumes": {
+            "selected_foods": 2,
+            "min_required": 1,
+            "max_allowed": 2,
+            "foods_in_group": [
+              "Soybeans",
+              "Potatoes"
+            ],
+            "selected_food_list": [
+              "Soybeans",
+              "Potatoes"
+            ],
+            "violations": []
+          },
+          "Farm2_Fruits": {
+            "selected_foods": 2,
+            "min_required": 1,
+            "max_allowed": 2,
+            "foods_in_group": [
+              "Apples",
+              "Tomatoes"
+            ],
+            "selected_food_list": [
+              "Apples",
+              "Tomatoes"
+            ],
+            "violations": []
+          }
+        }
+      },
+      "summary": {
+        "total_violations": 0,
+        "violation_types": {}
+      }
+    }
+  },
+  "comparison": {
+    "solver_comparison": {},
+    "solution_differences": {},
+    "objective_comparison": {
+      "best_solver": "PuLP",
+      "best_value": 81.59499999999998,
+      "worst_solver": "PuLP",
+      "worst_value": 81.59499999999998,
+      "relative_gap": 0.0,
+      "all_values": {
+        "PuLP": 81.59499999999998
+      }
+    },
+    "timing_comparison": {
+      "fastest_solver": "PuLP",
+      "fastest_time": 0.07320618629455566,
+      "slowest_solver": "PuLP",
+      "slowest_time": 0.07320618629455566,
+      "all_times": {
+        "PuLP": 0.07320618629455566
+      }
+    }
+  },
+  "scenario": {
+    "farms": [
+      "Farm1",
+      "Farm2"
+    ],
+    "foods": {
+      "Wheat": {
+        "nutritional_value": 0.7,
+        "nutrient_density": 0.6,
+        "environmental_impact": 0.3,
+        "affordability": 0.8,
+        "sustainability": 0.7
+      },
+      "Rice": {
+        "nutritional_value": 0.8,
+        "nutrient_density": 0.7,
+        "environmental_impact": 0.6,
+        "affordability": 0.7,
+        "sustainability": 0.5
+      },
+      "Soybeans": {
+        "nutritional_value": 0.9,
+        "nutrient_density": 0.8,
+        "environmental_impact": 0.2,
+        "affordability": 0.6,
+        "sustainability": 0.8
+      },
+      "Potatoes": {
+        "nutritional_value": 0.5,
+        "nutrient_density": 0.4,
+        "environmental_impact": 0.3,
+        "affordability": 0.9,
+        "sustainability": 0.7
+      },
+      "Apples": {
+        "nutritional_value": 0.7,
+        "nutrient_density": 0.6,
+        "environmental_impact": 0.2,
+        "affordability": 0.5,
+        "sustainability": 0.8
+      },
+      "Tomatoes": {
+        "nutritional_value": 0.6,
+        "nutrient_density": 0.5,
+        "environmental_impact": 0.2,
+        "affordability": 0.7,
+        "sustainability": 0.9
+      }
+    },
+    "food_groups": {
+      "Grains": [
+        "Wheat",
+        "Rice"
+      ],
+      "Legumes": [
+        "Soybeans",
+        "Potatoes"
+      ],
+      "Fruits": [
+        "Apples",
+        "Tomatoes"
+      ]
+    },
+    "config": {
+      "parameters": {
+        "weights": {
+          "nutritional_value": 0.25,
+          "nutrient_density": 0.2,
+          "affordability": 0.15,
+          "sustainability": 0.15,
+          "environmental_impact": 0.25
+        },
+        "land_availability": {
+          "Farm1": 75,
+          "Farm2": 100
+        },
+        "minimum_planting_area": {
+          "Wheat": 10,
+          "Rice": 12,
+          "Soybeans": 7,
+          "Potatoes": 5,
+          "Apples": 15,
+          "Tomatoes": 8
+        },
+        "max_percentage_per_crop": {
+          "Wheat": 0.4,
+          "Rice": 0.4,
+          "Soybeans": 0.4,
+          "Potatoes": 0.4,
+          "Apples": 0.4,
+          "Tomatoes": 0.4
+        },
+        "social_benefit": {
+          "Farm1": 0.2,
+          "Farm2": 0.2
+        },
+        "food_group_constraints": {
+          "Grains": {
+            "min_foods": 1,
+            "max_foods": 2
+          },
+          "Legumes": {
+            "min_foods": 1,
+            "max_foods": 2
+          },
+          "Fruits": {
+            "min_foods": 1,
+            "max_foods": 2
+          }
+        },
+        "global_min_different_foods": 5,
+        "min_foods_per_farm": 1,
+        "max_foods_per_farm": 6,
+        "min_total_land_usage_percentage": 0.5
+      },
+      "benders_tolerance": 0.001,
+      "benders_max_iterations": 100,
+      "pulp_time_limit": 120,
+      "use_multi_cut": true,
+      "use_trust_region": true,
+      "use_anticycling": true,
+      "use_norm_cuts": true,
+      "quantum_settings": {
+        "max_qubits": 20,
+        "use_qaoa_squared": true,
+        "force_qaoa_squared": true
+      }
+    }
+  }
+}

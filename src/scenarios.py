@@ -19,10 +19,12 @@ def load_food_data(complexity_level: str = 'simple') -> Tuple[List[str], Dict[st
         return _load_simple_food_data()
     elif complexity_level == 'intermediate':
         return _load_intermediate_food_data()
+    elif complexity_level == 'custom':
+        return _load_custom_food_data()
     elif complexity_level == 'full':
         return _load_full_food_data()
     else:
-        raise ValueError(f"Invalid complexity level: {complexity_level}. Must be one of: simple, intermediate, full")
+        raise ValueError(f"Invalid complexity level: {complexity_level}. Must be one of: simple, intermediate, custom, full")
 
 def _load_simple_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:
     """Load simplified food data for testing."""
@@ -222,6 +224,125 @@ def _load_intermediate_food_data() -> Tuple[List[str], Dict[str, Dict[str, float
     }
     
     logger.info(f"Loaded intermediate data for {len(farms)} farms and {len(foods)} foods")
+    return farms, foods, food_groups, config
+
+def _load_custom_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:
+    """Load custom food data for testing with 2 farms, 3 food groups, 2 foods per group."""
+    # Define farms (reduced to 2)
+    farms = ['Farm1', 'Farm2']
+    
+    # Define foods with nutritional values, etc. (3 food groups, 2 foods each)
+    foods = {
+        'Wheat': {
+            'nutritional_value': 0.7,
+            'nutrient_density': 0.6,
+            'environmental_impact': 0.3,
+            'affordability': 0.8,
+            'sustainability': 0.7
+        },
+        'Rice': {
+            'nutritional_value': 0.8,
+            'nutrient_density': 0.7,
+            'environmental_impact': 0.6,
+            'affordability': 0.7,
+            'sustainability': 0.5
+        },
+        'Soybeans': {
+            'nutritional_value': 0.9,
+            'nutrient_density': 0.8,
+            'environmental_impact': 0.2,
+            'affordability': 0.6,
+            'sustainability': 0.8
+        },
+        'Potatoes': {
+            'nutritional_value': 0.5,
+            'nutrient_density': 0.4,
+            'environmental_impact': 0.3,
+            'affordability': 0.9,
+            'sustainability': 0.7
+        },
+        'Apples': {
+            'nutritional_value': 0.7,
+            'nutrient_density': 0.6,
+            'environmental_impact': 0.2,
+            'affordability': 0.5,
+            'sustainability': 0.8
+        },
+        'Tomatoes': {
+            'nutritional_value': 0.6,
+            'nutrient_density': 0.5,
+            'environmental_impact': 0.2,
+            'affordability': 0.7,
+            'sustainability': 0.9
+        }
+    }
+    
+    # Define food groups (3 groups, 2 foods each)
+    food_groups = {
+        'Grains': ['Wheat', 'Rice'],
+        'Legumes': ['Soybeans', 'Potatoes'],  # Treating potatoes as legumes for this scenario
+        'Fruits': ['Apples', 'Tomatoes']  # Treating tomatoes as fruits for this scenario
+    }
+    
+    # Set parameters with updated configuration (same as intermediate)
+    parameters = {
+        'weights': {
+            'nutritional_value': 0.25,
+            'nutrient_density': 0.2,
+            'affordability': 0.15,
+            'sustainability': 0.15,
+            'environmental_impact': 0.25
+        },
+        'land_availability': {
+            'Farm1': 75,
+            'Farm2': 100
+        },
+        'minimum_planting_area': {
+            'Wheat': 10,
+            'Rice': 12,
+            'Soybeans': 7,
+            'Potatoes': 5,
+            'Apples': 15,
+            'Tomatoes': 8
+        },
+        'max_percentage_per_crop': {
+            food: 0.4 for food in foods  # 40% max per crop
+        },
+        'social_benefit': {
+            farm: 0.2 for farm in farms  # 20% minimum land utilization
+        },
+        'food_group_constraints': {
+            group: {
+                'min_foods': 1,  # At least 1 food from each group
+                'max_foods': len(foods_in_group)  # Up to all foods in group
+            }
+            for group, foods_in_group in food_groups.items()
+        },
+        # Additional parameters to match pulp_sim.py formulation
+        'global_min_different_foods': 5,  # Minimum number of different food types selected globally
+        'min_foods_per_farm': 1,  # Minimum number of different foods per farm
+        'max_foods_per_farm': 6,  # Maximum number of different foods per farm (all 6 foods)
+        'min_total_land_usage_percentage': 0.5  # Minimum 50% total land utilization
+    }
+    
+    # Update config with additional solver settings (same as intermediate)
+    config = {
+        'parameters': parameters,
+        'benders_tolerance': 1e-3,
+        'benders_max_iterations': 100,
+        'pulp_time_limit': 120,
+        'use_multi_cut': True,
+        'use_trust_region': True,
+        'use_anticycling': True,
+        'use_norm_cuts': True,
+        'quantum_settings': {
+            'max_qubits': 20,
+            'use_qaoa_squared': True,
+            'force_qaoa_squared': True
+        }
+    }
+    
+    logger.info(f"Loaded custom data for {len(farms)} farms and {len(foods)} foods")
     return farms, foods, food_groups, config
 
 def _load_full_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:

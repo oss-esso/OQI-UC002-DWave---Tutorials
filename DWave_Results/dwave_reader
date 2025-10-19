@@ -1,0 +1,82 @@
+import pickle
+import os
+
+# --- Data Definitions (similar to dwave-test.py) ---
+farms = ['Farm1', 'Farm2']
+crops = ['Wheat', 'Corn', 'Soy', 'Tomato']
+
+food_groups = {
+    'Grains': ['Wheat', 'Corn'],
+    'Legumes': ['Soy'],
+    'Vegetables': ['Tomato']
+}
+
+A_min = {'Wheat': 5, 'Corn': 4, 'Soy': 3, 'Tomato': 2}
+L = {'Farm1': 100, 'Farm2': 150}
+
+FG_min = {'Grains': 1, 'Legumes': 1, 'Vegetables': 1}
+FG_max = {'Grains': 2, 'Legumes': 1, 'Vegetables': 1}
+
+# --- Load Sampleset ---
+file_path = 'DWave_Results/sampleset.pickle'
+if not os.path.exists(file_path):
+    print(f"Error: Sampleset file not found at {file_path}")
+    print("Please run dwave-test.py first to generate the sampleset.")
+    exit()
+
+with open(file_path, 'rb') as f:
+    sampleset = pickle.load(f)
+
+# --- Analysis Code ---
+feasible_sampleset = sampleset.filter(lambda d: d.is_feasible)
+
+print(f"{len(feasible_sampleset)} feasible solutions of {len(sampleset)}.")
+
+print("\nBest feasible solution:")
+if len(feasible_sampleset) > 0:
+    best_sample = feasible_sampleset.first
+    
+    if 'Z' in best_sample.sample:
+        Z_value = best_sample.sample['Z']
+        print(f"Optimal Efficiency Z: {Z_value:.4f}\n")
+    else:
+        print("Objective value 'Z' not found in the best sample.\n")
+
+    for f in farms:
+        print(f"--- {f} ---")
+        for c in crops:
+            y_name = f"Y_{f}_{c}"
+            a_name = f"A_{f}_{c}"
+            
+            if y_name in best_sample.sample and a_name in best_sample.sample:
+                y_val = best_sample.sample[y_name]
+                a_val = best_sample.sample[a_name]
+                
+                if y_val > 0.5:
+                    required_min = A_min[c] * y_val
+                    status = "GOOD" if a_val >= required_min - 0.001 else "VIOLATED"
+                    print(f"  {f}, {c}: A={a_val:.2f} >= {required_min:.2f} (A_min*Y) {status}")
+
+        for g, crops_group in food_groups.items():
+            y_names_in_group = [f"Y_{f}_{c}" for c in crops_group]
+            count = sum(1 for y_name in y_names_in_group if y_name in best_sample.sample and best_sample.sample[y_name] > 0.5)
+            
+            selected_crops = [c for c in crops_group if f"Y_{f}_{c}" in best_sample.sample and best_sample.sample[f"Y_{f}_{c}"] > 0.5]
+
+            status = "GOOD" if FG_min[g] <= count <= FG_max[g] else "VIOLATED"
+            print(f"  {g}: {count} selected (range: {FG_min[g]}-{FG_max[g]}) {status}")
+            if selected_crops:
+                print(f"    Selected crops: {selected_crops}")
+
+# --- Timing Information ---
+times = sampleset.info
+
+print("\nTiming Information:")
+if isinstance(times, dict):
+    for key, value in times.items():
+        if isinstance(value, (int, float)):
+            print(f"  {key}: {value*1e-3:.2f} ms")
+        else:
+            print(f"  {key}: {value}")
+else:
+    print("No timing information available.")

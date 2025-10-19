@@ -1,0 +1,39 @@
+================================================================================
+FOOD OPTIMIZATION - SOLVER COMPARISON REPORT
+================================================================================
+
+SCENARIO SUMMARY:
+  Farms: 2 (Farm1, Farm2)
+  Foods: 6 (Wheat, Rice, Soybeans, Potatoes, Apples, Tomatoes)
+  Food Groups: 3
+    Grains: Wheat, Rice
+    Legumes: Soybeans, Potatoes
+    Fruits: Apples, Tomatoes
+
+SOLVER RESULTS SUMMARY:
+  PuLP:
+    Status: Optimal
+    Objective Value: 81.595000
+    Solve Time: 0.07s
+  CQM:
+    Status: ERROR
+    Objective Value: N/A
+    Solve Time: 0.00s
+  QUBO:
+    Status: ERROR
+    Objective Value: N/A
+    Solve Time: 0.00s
+
+OBJECTIVE VALUE COMPARISON:
+  Best Solver: PuLP (81.595000)
+  Worst Solver: PuLP (81.595000)
+  Relative Gap: 0.00%
+
+SOLVE TIME COMPARISON:
+  Fastest Solver: PuLP (0.07s)
+  Slowest Solver: PuLP (0.07s)
+
+CONSTRAINT VALIDATION SUMMARY:
+  PuLP:
+    Valid: ✓
+    Violations: 0
