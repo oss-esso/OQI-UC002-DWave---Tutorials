@@ -1,0 +1,182 @@
+[
+  {
+    "status": "Infeasible",
+    "objective_value": null,
+    "solve_time": 0.038901567459106445,
+    "num_variables": 20,
+    "num_constraints": 31,
+    "num_farms": 1,
+    "num_foods": 10,
+    "n": 10
+  },
+  {
+    "status": "Infeasible",
+    "objective_value": null,
+    "solve_time": 0.03520393371582031,
+    "num_variables": 40,
+    "num_constraints": 62,
+    "num_farms": 2,
+    "num_foods": 10,
+    "n": 20
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.26907940191267865,
+    "solve_time": 0.04325532913208008,
+    "num_variables": 60,
+    "num_constraints": 93,
+    "num_farms": 3,
+    "num_foods": 10,
+    "n": 30
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.2971013176657978,
+    "solve_time": 0.03572535514831543,
+    "num_variables": 80,
+    "num_constraints": 124,
+    "num_farms": 4,
+    "num_foods": 10,
+    "n": 40
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.2924818344207468,
+    "solve_time": 0.03767967224121094,
+    "num_variables": 100,
+    "num_constraints": 155,
+    "num_farms": 5,
+    "num_foods": 10,
+    "n": 50
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30009676383251055,
+    "solve_time": 0.03800344467163086,
+    "num_variables": 140,
+    "num_constraints": 217,
+    "num_farms": 7,
+    "num_foods": 10,
+    "n": 70
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.3073812065691275,
+    "solve_time": 0.039164066314697266,
+    "num_variables": 180,
+    "num_constraints": 279,
+    "num_farms": 9,
+    "num_foods": 10,
+    "n": 90
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.3078656624376735,
+    "solve_time": 0.044313669204711914,
+    "num_variables": 240,
+    "num_constraints": 372,
+    "num_farms": 12,
+    "num_foods": 10,
+    "n": 120
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.3069287228094886,
+    "solve_time": 0.044302940368652344,
+    "num_variables": 320,
+    "num_constraints": 496,
+    "num_farms": 16,
+    "num_foods": 10,
+    "n": 160
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.307058661336582,
+    "solve_time": 0.04839205741882324,
+    "num_variables": 420,
+    "num_constraints": 651,
+    "num_farms": 21,
+    "num_foods": 10,
+    "n": 210
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.3071674446053765,
+    "solve_time": 0.05566287040710449,
+    "num_variables": 560,
+    "num_constraints": 868,
+    "num_farms": 28,
+    "num_foods": 10,
+    "n": 280
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30746245547185497,
+    "solve_time": 0.06370878219604492,
+    "num_variables": 760,
+    "num_constraints": 1178,
+    "num_farms": 38,
+    "num_foods": 10,
+    "n": 380
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30734631996633455,
+    "solve_time": 0.06903934478759766,
+    "num_variables": 1000,
+    "num_constraints": 1550,
+    "num_farms": 50,
+    "num_foods": 10,
+    "n": 500
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30735805262278054,
+    "solve_time": 0.08130741119384766,
+    "num_variables": 1320,
+    "num_constraints": 2046,
+    "num_farms": 66,
+    "num_foods": 10,
+    "n": 660
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30723408810758174,
+    "solve_time": 0.09145450592041016,
+    "num_variables": 1740,
+    "num_constraints": 2697,
+    "num_farms": 87,
+    "num_foods": 10,
+    "n": 870
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30735332536351473,
+    "solve_time": 0.10744237899780273,
+    "num_variables": 2300,
+    "num_constraints": 3565,
+    "num_farms": 115,
+    "num_foods": 10,
+    "n": 1150
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.30737287266700164,
+    "solve_time": 0.14541387557983398,
+    "num_variables": 3020,
+    "num_constraints": 4681,
+    "num_farms": 151,
+    "num_foods": 10,
+    "n": 1510
+  },
+  {
+    "status": "Optimal",
+    "objective_value": 0.3074531203882612,
+    "solve_time": 0.17210936546325684,
+    "num_variables": 4000,
+    "num_constraints": 6200,
+    "num_farms": 200,
+    "num_foods": 10,
+    "n": 2000
+  }
+]
