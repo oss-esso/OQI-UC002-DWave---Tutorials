@@ -1,0 +1,78 @@
+{
+  "manifest": {
+    "scenario": "full_family",
+    "timestamp": "20251021_170836",
+    "cqm_path": "CQM_Models/cqm_full_family_20251021_170836.cqm",
+    "constraints_path": "Constraints/constraints_full_family_20251021_170836.json",
+    "pulp_path": "PuLP_Results/pulp_full_family_20251021_170836.json",
+    "dwave_path": "DWave_Results/dwave_full_family_20251021_170836.pickle",
+    "farms": [
+      "Farm1",
+      "Farm2",
+      "Farm3",
+      "Farm4",
+      "Farm5",
+      "Farm6",
+      "Farm7",
+      "Farm8",
+      "Farm9",
+      "Farm10",
+      "Farm11",
+      "Farm12",
+      "Farm13",
+      "Farm14",
+      "Farm15",
+      "Farm16",
+      "Farm17",
+      "Farm18",
+      "Farm19",
+      "Farm20",
+      "Farm21",
+      "Farm22",
+      "Farm23",
+      "Farm24",
+      "Farm25"
+    ],
+    "foods": [
+      "Beef",
+      "Chicken",
+      "Avocado",
+      "Durian",
+      "Peanuts",
+      "Tempeh",
+      "Corn",
+      "Potato",
+      "Eggplant",
+      "Long bean"
+    ],
+    "pulp_status": "Optimal",
+    "pulp_objective": 0.28690242773558994,
+    "dwave_feasible_count": 96,
+    "dwave_total_count": 97
+  },
+  "verification_timestamp": "2025-10-21T17:09:21.477767",
+  "timing": {
+    "pulp_solve_time_seconds": 0.06847310066223145,
+    "dwave": {
+      "qpu_access_time_ms": 34.773,
+      "charge_time_ms": 4538.77,
+      "run_time_ms": 4538.77,
+      "run_time_seconds": 4.53877
+    }
+  },
+  "pulp_verification": {
+    "violations": [],
+    "passed": true,
+    "objective": 0.28690242773558994
+  },
+  "dwave_verification": {
+    "violations": [],
+    "passed": true,
+    "objective": 0.28690242773559005
+  },
+  "comparison": {
+    "differences": [],
+    "solutions_match": true,
+    "objectives_match": true
+  }
+}

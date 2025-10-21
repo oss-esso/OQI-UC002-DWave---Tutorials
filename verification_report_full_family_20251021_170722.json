@@ -1,0 +1,751 @@
+{
+  "manifest": {
+    "scenario": "full_family",
+    "timestamp": "20251021_170722",
+    "cqm_path": "CQM_Models/cqm_full_family_20251021_170722.cqm",
+    "constraints_path": "Constraints/constraints_full_family_20251021_170722.json",
+    "pulp_path": "PuLP_Results/pulp_full_family_20251021_170722.json",
+    "dwave_path": "DWave_Results/dwave_full_family_20251021_170722.pickle",
+    "farms": [
+      "Farm1",
+      "Farm2",
+      "Farm3",
+      "Farm4",
+      "Farm5",
+      "Farm6",
+      "Farm7",
+      "Farm8",
+      "Farm9",
+      "Farm10",
+      "Farm11",
+      "Farm12",
+      "Farm13",
+      "Farm14",
+      "Farm15",
+      "Farm16",
+      "Farm17",
+      "Farm18",
+      "Farm19",
+      "Farm20",
+      "Farm21",
+      "Farm22",
+      "Farm23",
+      "Farm24",
+      "Farm25"
+    ],
+    "foods": [
+      "Beef",
+      "Chicken",
+      "Avocado",
+      "Durian",
+      "Peanuts",
+      "Tempeh",
+      "Corn",
+      "Potato",
+      "Eggplant",
+      "Long bean"
+    ],
+    "pulp_status": "Optimal",
+    "pulp_objective": 0.2862933045132542,
+    "dwave_feasible_count": 50,
+    "dwave_total_count": 85
+  },
+  "verification_timestamp": "2025-10-21T17:07:42.429931",
+  "timing": {
+    "pulp_solve_time_seconds": 0.08637523651123047,
+    "dwave": {
+      "qpu_access_time_ms": 34.775,
+      "charge_time_ms": 5000.0,
+      "run_time_ms": 5000.898,
+      "run_time_seconds": 5.000898
+    }
+  },
+  "pulp_verification": {
+    "violations": [],
+    "passed": true,
+    "objective": 0.2862933045132542
+  },
+  "dwave_verification": {
+    "violations": [],
+    "passed": true,
+    "objective": 0.2859727655544155
+  },
+  "comparison": {
+    "differences": [
+      {
+        "farm": "Farm1",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm1",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm1",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm1",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm1",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm1",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm2",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm2",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm2",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm2",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm3",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm3",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm3",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm3",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm4",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm4",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm4",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm4",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm5",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm5",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm5",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm5",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm6",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm7",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm7",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm7",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm7",
+        "food": "Long bean",
+        "pulp_area": 0.15,
+        "dwave_area": 0.10999999999999999,
+        "difference": 0.04000000000000001
+      },
+      {
+        "farm": "Farm8",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm8",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm8",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm8",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm9",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm9",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm10",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm10",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm10",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm10",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm11",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm11",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm12",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm12",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm13",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm13",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm14",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm14",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm14",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm14",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm15",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm15",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm16",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm16",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm16",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm16",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm16",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm16",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm17",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm17",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm18",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm19",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm19",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm19",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm19",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm20",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm20",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm20",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm20",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm21",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm21",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm21",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm21",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm22",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm22",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm23",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm23",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm24",
+        "food": "Beef",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm24",
+        "food": "Chicken",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm24",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm24",
+        "food": "Potato",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm25",
+        "food": "Avocado",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm25",
+        "food": "Durian",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm25",
+        "food": "Peanuts",
+        "pulp_area": 0.0,
+        "dwave_area": 0.04,
+        "difference": 0.04
+      },
+      {
+        "farm": "Farm25",
+        "food": "Tempeh",
+        "pulp_area": 0.04,
+        "dwave_area": 0.0,
+        "difference": 0.04
+      }
+    ],
+    "solutions_match": false,
+    "objectives_match": false
+  }
+}

@@ -481,7 +481,7 @@ def _load_full_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict
     return farms, foods, food_groups, config
 
 def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:
-    """Load full scenario data with 15 farms from farm_sampler and adjusted minimum areas."""
+    """Load full scenario data with 25 farms from farm_sampler and adjusted minimum areas."""
     import sys
     import os
     # Add project root to path to import farm_sampler
@@ -491,7 +491,7 @@ def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]
     from farm_sampler import generate_farms
     
     # Generate 15 farms using the sampler
-    L = generate_farms(n_farms=15, seed=42)
+    L = generate_farms(n_farms=125, seed=42)
     farms = list(L.keys())
     
     print(f"Generated {len(farms)} farms with farm_sampler")
@@ -566,11 +566,10 @@ def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]
             _, foods, food_groups, _ = _load_intermediate_food_data()
     
     # Adjusted minimum planting areas (reduced to fit small farms)
-    # Based on farm sizes from sampler: smallest ~0.28 ha, needs 5 food groups
-    # Maximum safe minimum: 0.28 / 5 = 0.056 ha, use 0.05 ha to be safe
+    
     min_areas = {}
     for food in foods.keys():
-        min_areas[food] = 0.05  # 0.05 ha (500 m²) minimum for all crops
+        min_areas[food] = 0.01  # 0.01 ha (100 m²) minimum for all crops
     
     parameters = {
         'land_availability': L,  # From farm_sampler
@@ -582,7 +581,7 @@ def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]
             farm: 0.2 for farm in farms
         },
         'food_group_constraints': {
-            g: {'min_foods': 1, 'max_foods': len(lst)}
+            g: {'min_foods': 2, 'max_foods': len(lst)}
             for g, lst in food_groups.items()
         },
         'weights': {
