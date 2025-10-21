@@ -19,81 +19,113 @@ from solver_runner import create_cqm, solve_with_pulp, solve_with_dwave
 import pulp as pl
 
 # Benchmark configurations
-# Format: (n_food_groups, n_farms)
+# Format: number of farms to test with full_family scenario
 BENCHMARK_CONFIGS = [
-    (1, 1),
-    (2, 1),
-    (1, 2),
-    (2, 2),
-    (1, 5),
-    (2, 5),
-    (2, 10),
-    (2, 25),
-    (2, 125),
-    (2, 625),
-    (2, 1250),
+    2500,
+    3000,
+    3500,
+    4000,
 ]
 
-def create_custom_scenario(n_food_groups, n_farms, seed=42):
+def load_full_family_with_n_farms(n_farms, seed=42):
     """
-    Create a custom scenario with specified number of food groups and farms.
+    Load full_family scenario with specified number of farms.
+    Uses the same logic as the scaling analysis.
     """
+    import pandas as pd
+    
     # Generate farms
     L = generate_farms(n_farms=n_farms, seed=seed)
     farms = list(L.keys())
     
-    # Base foods with scores (use simple, well-balanced foods)
-    all_foods = {
-        'Wheat': {'nutritional_value': 0.7, 'nutrient_density': 0.6, 'environmental_impact': 0.3, 
-                  'affordability': 0.8, 'sustainability': 0.7},
-        'Corn': {'nutritional_value': 0.6, 'nutrient_density': 0.5, 'environmental_impact': 0.4, 
-                 'affordability': 0.9, 'sustainability': 0.6},
-        'Rice': {'nutritional_value': 0.8, 'nutrient_density': 0.7, 'environmental_impact': 0.6, 
-                 'affordability': 0.7, 'sustainability': 0.5},
-        'Soybeans': {'nutritional_value': 0.9, 'nutrient_density': 0.8, 'environmental_impact': 0.2, 
-                     'affordability': 0.6, 'sustainability': 0.8},
-        'Potatoes': {'nutritional_value': 0.5, 'nutrient_density': 0.4, 'environmental_impact': 0.3, 
-                     'affordability': 0.9, 'sustainability': 0.7},
-        'Tomatoes': {'nutritional_value': 0.6, 'nutrient_density': 0.5, 'environmental_impact': 0.2, 
-                     'affordability': 0.7, 'sustainability': 0.9},
-        'Apples': {'nutritional_value': 0.7, 'nutrient_density': 0.6, 'environmental_impact': 0.2, 
-                   'affordability': 0.5, 'sustainability': 0.8},
-        'Carrots': {'nutritional_value': 0.8, 'nutrient_density': 0.7, 'environmental_impact': 0.2, 
-                    'affordability': 0.8, 'sustainability': 0.8},
-    }
+    # Load food data from Excel or use fallback
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    excel_path = os.path.join(script_dir, "Inputs", "Combined_Food_Data.xlsx")
     
-    # Define food groups (2 foods per group)
-    all_food_groups = {
-        'Grains': ['Wheat', 'Corn'],
-        'Legumes': ['Soybeans', 'Rice'],
-        'Vegetables': ['Potatoes', 'Tomatoes'],
-        'Fruits': ['Apples', 'Carrots'],
-    }
+    if not os.path.exists(excel_path):
+        print("Excel file not found, using fallback foods")
+        # Fallback: use simple food data
+        foods = {
+            'Wheat': {'nutritional_value': 0.7, 'nutrient_density': 0.6, 'environmental_impact': 0.3, 
+                      'affordability': 0.8, 'sustainability': 0.7},
+            'Corn': {'nutritional_value': 0.6, 'nutrient_density': 0.5, 'environmental_impact': 0.4, 
+                     'affordability': 0.9, 'sustainability': 0.6},
+            'Rice': {'nutritional_value': 0.8, 'nutrient_density': 0.7, 'environmental_impact': 0.6, 
+                     'affordability': 0.7, 'sustainability': 0.5},
+            'Soybeans': {'nutritional_value': 0.9, 'nutrient_density': 0.8, 'environmental_impact': 0.2, 
+                         'affordability': 0.6, 'sustainability': 0.8},
+            'Potatoes': {'nutritional_value': 0.5, 'nutrient_density': 0.4, 'environmental_impact': 0.3, 
+                         'affordability': 0.9, 'sustainability': 0.7},
+            'Apples': {'nutritional_value': 0.7, 'nutrient_density': 0.6, 'environmental_impact': 0.2, 
+                       'affordability': 0.5, 'sustainability': 0.8},
+            'Tomatoes': {'nutritional_value': 0.6, 'nutrient_density': 0.5, 'environmental_impact': 0.2, 
+                         'affordability': 0.7, 'sustainability': 0.9},
+            'Carrots': {'nutritional_value': 0.8, 'nutrient_density': 0.7, 'environmental_impact': 0.2, 
+                        'affordability': 0.8, 'sustainability': 0.8},
+            'Lentils': {'nutritional_value': 0.9, 'nutrient_density': 0.8, 'environmental_impact': 0.2, 
+                        'affordability': 0.7, 'sustainability': 0.8},
+            'Spinach': {'nutritional_value': 0.8, 'nutrient_density': 0.9, 'environmental_impact': 0.1, 
+                        'affordability': 0.6, 'sustainability': 0.9},
+        }
+        food_groups = {
+            'Grains': ['Wheat', 'Corn', 'Rice'],
+            'Legumes': ['Soybeans', 'Lentils'],
+            'Vegetables': ['Potatoes', 'Tomatoes', 'Carrots', 'Spinach'],
+            'Fruits': ['Apples'],
+        }
+    else:
+        # Load from Excel (same logic as in analyze_pulp_scaling.py)
+        df = pd.read_excel(excel_path)
+        
+        # Sample 2 per group
+        sampled = df.groupby('food_group').apply(
+            lambda x: x.sample(n=min(len(x), 2), random_state=seed)
+        ).reset_index(drop=True)
+        foods_list = sampled['Food_Name'].tolist()
+        
+        filt = df[df['Food_Name'].isin(foods_list)][['Food_Name', 'food_group',
+                                                       'nutritional_value', 'nutrient_density',
+                                                       'environmental_impact', 'affordability',
+                                                       'sustainability']].copy()
+        filt.rename(columns={'Food_Name': 'Food_Name', 'food_group': 'Food_Group'}, inplace=True)
+        
+        objectives = ['nutritional_value', 'nutrient_density', 'environmental_impact', 'affordability', 'sustainability']
+        for obj in objectives:
+            filt[obj] = filt[obj].fillna(0.5).clip(0, 1)
+        
+        # Build foods dict
+        foods = {}
+        for _, row in filt.iterrows():
+            fname = row['Food_Name']
+            foods[fname] = {
+                'nutritional_value': float(row['nutritional_value']),
+                'nutrient_density': float(row['nutrient_density']),
+                'environmental_impact': float(row['environmental_impact']),
+                'affordability': float(row['affordability']),
+                'sustainability': float(row['sustainability'])
+            }
+        
+        # Build food groups
+        food_groups = {}
+        for _, row in filt.iterrows():
+            g = row['Food_Group']
+            fname = row['Food_Name']
+            if g not in food_groups:
+                food_groups[g] = []
+            food_groups[g].append(fname)
     
-    # Select food groups
-    selected_group_names = list(all_food_groups.keys())[:n_food_groups]
-    food_groups = {g: all_food_groups[g] for g in selected_group_names}
+    # Set minimum planting areas
+    min_areas = {food: 0.01 for food in foods.keys()}
     
-    # Select foods (only from selected groups)
-    selected_food_names = []
-    for g in selected_group_names:
-        selected_food_names.extend(all_food_groups[g])
-    
-    foods = {name: all_foods[name] for name in selected_food_names}
-    
-    # Calculate minimum area based on smallest farm
-    smallest_farm = min(L.values())
-    min_area_per_crop = (smallest_farm / n_food_groups) * 0.95  # 95% safety margin
-    
-    min_areas = {food: min_area_per_crop for food in foods.keys()}
-    
-    # Create config
+    # Build config
     parameters = {
         'land_availability': L,
         'minimum_planting_area': min_areas,
+        'max_percentage_per_crop': {food: 0.4 for food in foods},
+        'social_benefit': {farm: 0.2 for farm in farms},
         'food_group_constraints': {
-            g: {'min_foods': 1, 'max_foods': len(crops)}
-            for g, crops in food_groups.items()
+            g: {'min_foods': 2, 'max_foods': len(lst)}
+            for g, lst in food_groups.items()
         },
         'weights': {
             'nutritional_value': 0.25,
@@ -104,24 +136,22 @@ def create_custom_scenario(n_food_groups, n_farms, seed=42):
         }
     }
     
-    config = {
-        'parameters': parameters,
-    }
+    config = {'parameters': parameters}
     
     return farms, foods, food_groups, config
 
-def run_benchmark(n_food_groups, n_farms):
+def run_benchmark(n_farms):
     """
-    Run a single benchmark test.
+    Run a single benchmark test with full_family scenario.
     Returns timing results and problem size metrics.
     """
     print(f"\n{'='*80}")
-    print(f"BENCHMARK: {n_food_groups} Food Groups, {n_farms} Farms")
+    print(f"BENCHMARK: full_family scenario with {n_farms} Farms")
     print(f"{'='*80}")
     
     try:
-        # Create scenario
-        farms, foods, food_groups, config = create_custom_scenario(n_food_groups, n_farms)
+        # Load full_family scenario with specified number of farms
+        farms, foods, food_groups, config = load_full_family_with_n_farms(n_farms, seed=42)
         
         n_foods = len(foods)
         n_vars = 2 * n_farms * n_foods  # Binary + continuous
@@ -173,14 +203,14 @@ def run_benchmark(n_food_groups, n_farms):
             print(f"    DWave Error: {e}")
         
         result = {
-            'n_food_groups': n_food_groups,
             'n_farms': n_farms,
             'n_foods': n_foods,
             'n_vars': n_vars,
             'n_constraints': n_constraints,
-            'problem_size': problem_size,
+            'problem_size': n_farms * n_foods,  # n = farms × foods
             'pulp_time': pulp_time,
             'pulp_status': pulp_results['status'],
+            'pulp_objective': pulp_results.get('objective_value'),
             'dwave_time': dwave_time,
             'qpu_time': qpu_time,
             'hybrid_time': hybrid_time,
@@ -299,22 +329,33 @@ def create_summary_table(results, output_file='scalability_table.png'):
     ax.axis('off')
     
     # Prepare table data
-    headers = ['Food\nGroups', 'Farms', 'Foods', 'Vars', 'Constraints', 'Problem\nSize', 
-               'PuLP\nTime (s)', 'D-Wave\nTime (s)', 'QPU\nTime (s)', 'Status']
+    headers = ['Farms', 'Foods', 'n', 'Vars', 'Constraints', 
+               'PuLP\nTime (s)', 'D-Wave\nTime (s)', 'QPU\nTime (s)', 'Hybrid\nTime (s)', 'Winner']
     
     table_data = []
     for r in results:
+        # Determine winner
+        if r['dwave_time'] is not None and r['pulp_time'] is not None:
+            if r['dwave_time'] < r['pulp_time']:
+                winner = '🏆 D-Wave'
+            elif r['pulp_time'] < r['dwave_time']:
+                winner = '🏆 PuLP'
+            else:
+                winner = 'Tie'
+        else:
+            winner = 'N/A'
+        
         row = [
-            r['n_food_groups'],
             r['n_farms'],
             r['n_foods'],
+            r['problem_size'],
             r['n_vars'],
             r['n_constraints'],
-            r['problem_size'],
             f"{r['pulp_time']:.3f}",
             f"{r['dwave_time']:.3f}" if r['dwave_time'] else 'N/A',
             f"{r['qpu_time']:.6f}" if r['qpu_time'] else 'N/A',
-            '✅' if r['pulp_status'] == 'Optimal' else '❌'
+            f"{r['hybrid_time']:.3f}" if r['hybrid_time'] else 'N/A',
+            winner
         ]
         table_data.append(row)
     
@@ -351,8 +392,8 @@ def main():
     
     results = []
     
-    for n_food_groups, n_farms in BENCHMARK_CONFIGS:
-        result = run_benchmark(n_food_groups, n_farms)
+    for n_farms in BENCHMARK_CONFIGS:
+        result = run_benchmark(n_farms)
         if result:
             results.append(result)
     
