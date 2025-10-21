@@ -1,0 +1,141 @@
+{
+  "status": "SubOptimal",
+  "objective_value": 0.2894444444444445,
+  "lower_bound": -0.0233333331,
+  "upper_bound": 0.2894444444444445,
+  "gap": 1.0806142022754117,
+  "iterations": 10,
+  "total_time": 1.7588717937469482,
+  "binary_variables": {
+    "Farm1_Wheat": 1,
+    "Farm1_Corn": 0,
+    "Farm1_Rice": 0,
+    "Farm1_Soybeans": 1,
+    "Farm1_Potatoes": 1,
+    "Farm1_Apples": 1,
+    "Farm2_Wheat": 0,
+    "Farm2_Corn": 1,
+    "Farm2_Rice": 0,
+    "Farm2_Soybeans": 1,
+    "Farm2_Potatoes": 1,
+    "Farm2_Apples": 1,
+    "Farm3_Wheat": 1,
+    "Farm3_Corn": 0,
+    "Farm3_Rice": 0,
+    "Farm3_Soybeans": 1,
+    "Farm3_Potatoes": 1,
+    "Farm3_Apples": 1
+  },
+  "area_variables": {
+    "Farm1_Wheat": 5.0,
+    "Farm1_Corn": 0.0,
+    "Farm1_Rice": 0.0,
+    "Farm1_Soybeans": 60.0,
+    "Farm1_Potatoes": 5.0,
+    "Farm1_Apples": 5.0,
+    "Farm2_Wheat": 0.0,
+    "Farm2_Corn": 5.0,
+    "Farm2_Rice": 0.0,
+    "Farm2_Soybeans": 85.0,
+    "Farm2_Potatoes": 5.0,
+    "Farm2_Apples": 5.0,
+    "Farm3_Wheat": 5.0,
+    "Farm3_Corn": 0.0,
+    "Farm3_Rice": 0.0,
+    "Farm3_Soybeans": 35.0,
+    "Farm3_Potatoes": 5.0,
+    "Farm3_Apples": 5.0
+  },
+  "iteration_history": [
+    {
+      "iteration": 1,
+      "lower_bound": -0.06666666615,
+      "upper_bound": 0.2583333333333334,
+      "gap": 1.2580645136420394,
+      "num_cuts": 1,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 2,
+      "lower_bound": -0.0355555553,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.1228406897080396,
+      "num_cuts": 2,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 3,
+      "lower_bound": -0.0288888886,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0998080600422928,
+      "num_cuts": 3,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 4,
+      "lower_bound": -0.0288888886,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0998080600422928,
+      "num_cuts": 4,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 5,
+      "lower_bound": -0.02666666645,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.092130517108285,
+      "num_cuts": 5,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 6,
+      "lower_bound": -0.0233333331,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0806142022754117,
+      "num_cuts": 6,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 7,
+      "lower_bound": -0.0233333331,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0806142022754117,
+      "num_cuts": 7,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 8,
+      "lower_bound": -0.0233333331,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0806142022754117,
+      "num_cuts": 8,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 9,
+      "lower_bound": -0.0233333331,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0806142022754117,
+      "num_cuts": 9,
+      "cut_type": "optimality",
+      "is_feasible": true
+    },
+    {
+      "iteration": 10,
+      "lower_bound": -0.0233333331,
+      "upper_bound": 0.2894444444444445,
+      "gap": 1.0806142022754117,
+      "num_cuts": 10,
+      "cut_type": "optimality",
+      "is_feasible": true
+    }
+  ]
+}
