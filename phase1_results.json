@@ -1,0 +1,50 @@
+{
+  "scenarios": {
+    "simple": {
+      "n_vars": 18
+    },
+    "intermediate": {
+      "n_vars": 18
+    },
+    "custom": {
+      "n_vars": 12
+    }
+  },
+  "milp_results": {
+    "simple": {
+      "status": "Optimal",
+      "objective": 73.12500000000001,
+      "time": 0.055155277252197266,
+      "has_continuous": true,
+      "n_constraints": 3
+    },
+    "intermediate": {
+      "status": "Optimal",
+      "objective": 112.27499999999998,
+      "time": 0.05095243453979492,
+      "has_continuous": true,
+      "n_constraints": 51
+    },
+    "custom": {
+      "status": "Optimal",
+      "objective": 91.69500000000001,
+      "time": 0.04961848258972168,
+      "has_continuous": true,
+      "n_constraints": 32
+    }
+  },
+  "classical_qubo_results": {
+    "simple": {
+      "cost": -242.4,
+      "time": 1.6155822277069092
+    },
+    "intermediate": {
+      "cost": -425.4,
+      "time": 1.6082675457000732
+    },
+    "custom": {
+      "cost": -272.86,
+      "time": 0.019898414611816406
+    }
+  }
+}

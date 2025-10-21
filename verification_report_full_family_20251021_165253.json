@@ -1,0 +1,321 @@
+{
+  "manifest": {
+    "scenario": "full_family",
+    "timestamp": "20251021_165253",
+    "cqm_path": "CQM_Models/cqm_full_family_20251021_165253.cqm",
+    "constraints_path": "Constraints/constraints_full_family_20251021_165253.json",
+    "pulp_path": "PuLP_Results/pulp_full_family_20251021_165253.json",
+    "dwave_path": "DWave_Results/dwave_full_family_20251021_165253.pickle",
+    "farms": [
+      "Farm1",
+      "Farm2",
+      "Farm3",
+      "Farm4",
+      "Farm5",
+      "Farm6",
+      "Farm7",
+      "Farm8",
+      "Farm9",
+      "Farm10",
+      "Farm11",
+      "Farm12",
+      "Farm13",
+      "Farm14",
+      "Farm15"
+    ],
+    "foods": [
+      "Egg",
+      "Lamb",
+      "Guava",
+      "Papaya",
+      "Chickpeas",
+      "Tofu",
+      "Corn",
+      "Potato",
+      "Cucumber",
+      "Spinach"
+    ],
+    "pulp_status": "Optimal",
+    "pulp_objective": 0.4208825269070245,
+    "dwave_feasible_count": 102,
+    "dwave_total_count": 116
+  },
+  "verification_timestamp": "2025-10-21T16:53:13.182175",
+  "timing": {
+    "pulp_solve_time_seconds": 0.09628558158874512,
+    "dwave": {
+      "qpu_access_time_ms": 34.779,
+      "charge_time_ms": 5000.0,
+      "run_time_ms": 5280.276,
+      "run_time_seconds": 5.280276
+    }
+  },
+  "pulp_verification": {
+    "violations": [],
+    "passed": true,
+    "objective": 0.4208825269070245
+  },
+  "dwave_verification": {
+    "violations": [],
+    "passed": true,
+    "objective": 0.4207313602371651
+  },
+  "comparison": {
+    "differences": [
+      {
+        "farm": "Farm1",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm1",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm2",
+        "food": "Egg",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm2",
+        "food": "Lamb",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm3",
+        "food": "Guava",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm3",
+        "food": "Papaya",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm4",
+        "food": "Guava",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm4",
+        "food": "Papaya",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm4",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm4",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm5",
+        "food": "Egg",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm5",
+        "food": "Lamb",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm5",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm5",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm7",
+        "food": "Egg",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm7",
+        "food": "Lamb",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm7",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm7",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm8",
+        "food": "Guava",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm8",
+        "food": "Papaya",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm9",
+        "food": "Egg",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm9",
+        "food": "Lamb",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm10",
+        "food": "Egg",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm10",
+        "food": "Lamb",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm11",
+        "food": "Guava",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm11",
+        "food": "Papaya",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm12",
+        "food": "Guava",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm12",
+        "food": "Papaya",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm12",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm12",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm13",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm13",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm14",
+        "food": "Egg",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm14",
+        "food": "Lamb",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm15",
+        "food": "Corn",
+        "pulp_area": 0.0,
+        "dwave_area": 0.05,
+        "difference": 0.05
+      },
+      {
+        "farm": "Farm15",
+        "food": "Potato",
+        "pulp_area": 0.05,
+        "dwave_area": 0.0,
+        "difference": 0.05
+      }
+    ],
+    "solutions_match": false,
+    "objectives_match": false
+  }
+}

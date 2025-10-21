@@ -356,7 +356,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Run solvers on a food optimization scenario')
     parser.add_argument('--scenario', type=str, default='simple', 
-                       choices=['simple', 'intermediate', 'full'],
+                       choices=['simple', 'intermediate', 'full', 'custom', 'full_family'],
                        help='Scenario to solve (default: simple)')
     
     args = parser.parse_args()

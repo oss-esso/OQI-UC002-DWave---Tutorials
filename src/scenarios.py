@@ -23,8 +23,10 @@ def load_food_data(complexity_level: str = 'simple') -> Tuple[List[str], Dict[st
         return _load_custom_food_data()
     elif complexity_level == 'full':
         return _load_full_food_data()
+    elif complexity_level == 'full_family':
+        return _load_full_family_food_data()
     else:
-        raise ValueError(f"Invalid complexity level: {complexity_level}. Must be one of: simple, intermediate, custom, full")
+        raise ValueError(f"Invalid complexity level: {complexity_level}. Must be one of: simple, intermediate, custom, full, full_family")
 
 def _load_simple_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:
     """Load simplified food data for testing."""
@@ -475,6 +477,140 @@ def _load_full_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict
     }
 
     logger.info(f"Loaded full data for {len(farms)} farms and {len(foods)} foods. Parameters generated.")
+    
+    return farms, foods, food_groups, config
+
+def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict[str, List[str]], Dict]:
+    """Load full scenario data with 15 farms from farm_sampler and adjusted minimum areas."""
+    import sys
+    import os
+    # Add project root to path to import farm_sampler
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, project_root)
+    
+    from farm_sampler import generate_farms
+    
+    # Generate 15 farms using the sampler
+    L = generate_farms(n_farms=15, seed=42)
+    farms = list(L.keys())
+    
+    print(f"Generated {len(farms)} farms with farm_sampler")
+    print(f"Total land: {sum(L.values()):.2f} ha")
+    
+    # Use the same food data as full scenario
+    # Load from Excel (same as _load_full_food_data)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root_excel = os.path.dirname(script_dir)
+    excel_path = os.path.join(project_root_excel, "Inputs", "Combined_Food_Data.xlsx")
+    
+    if not os.path.exists(excel_path):
+        print(f"Excel file not found at: {excel_path}")
+        print("Using intermediate scenario foods as fallback...")
+        # Use intermediate food data
+        _, foods, food_groups, _ = _load_intermediate_food_data()
+    else:
+        print(f"Loading food data from: {excel_path}")
+        try:
+            df = pd.read_excel(excel_path)
+            
+            col_map = {
+                'Food_Name': 'Food_Name',
+                'food_group': 'Food_Group',
+                'nutritional_value': 'nutritional_value',
+                'nutrient_density': 'nutrient_density',
+                'environmental_impact': 'environmental_impact',
+                'affordability': 'affordability',
+                'sustainability': 'sustainability'
+            }
+            
+            # Sample 2 per group
+            grp_col = 'food_group'
+            name_col = 'Food_Name'
+            sampled = df.groupby(grp_col).apply(
+                lambda x: x.sample(n=min(len(x), 2))
+            ).reset_index(drop=True)
+            foods_list = sampled[col_map['Food_Name']].tolist()
+            
+            filt = df[df[name_col].isin(foods_list)][list(col_map.keys())].copy()
+            filt.rename(columns=col_map, inplace=True)
+            
+            objectives = ['nutritional_value', 'nutrient_density', 'environmental_impact', 'affordability', 'sustainability']
+            for obj in objectives:
+                filt[obj] = filt[obj].fillna(0.5)
+                filt[obj] = filt[obj].clip(0, 1)
+            
+            # Build foods dict
+            foods = {}
+            for _, row in filt.iterrows():
+                fname = row['Food_Name']
+                foods[fname] = {
+                    'nutritional_value': float(row['nutritional_value']),
+                    'nutrient_density': float(row['nutrient_density']),
+                    'environmental_impact': float(row['environmental_impact']),
+                    'affordability': float(row['affordability']),
+                    'sustainability': float(row['sustainability'])
+                }
+            
+            # Build food groups
+            food_groups = {}
+            for _, row in filt.iterrows():
+                g = row['Food_Group']
+                fname = row['Food_Name']
+                if g not in food_groups:
+                    food_groups[g] = []
+                food_groups[g].append(fname)
+                
+        except Exception as e:
+            print(f"Error loading Excel: {e}")
+            print("Using intermediate scenario foods as fallback...")
+            _, foods, food_groups, _ = _load_intermediate_food_data()
+    
+    # Adjusted minimum planting areas (reduced to fit small farms)
+    # Based on farm sizes from sampler: smallest ~0.28 ha, needs 5 food groups
+    # Maximum safe minimum: 0.28 / 5 = 0.056 ha, use 0.05 ha to be safe
+    min_areas = {}
+    for food in foods.keys():
+        min_areas[food] = 0.05  # 0.05 ha (500 m²) minimum for all crops
+    
+    parameters = {
+        'land_availability': L,  # From farm_sampler
+        'minimum_planting_area': min_areas,
+        'max_percentage_per_crop': {
+            food: 0.4 for food in foods
+        },
+        'social_benefit': {
+            farm: 0.2 for farm in farms
+        },
+        'food_group_constraints': {
+            g: {'min_foods': 1, 'max_foods': len(lst)}
+            for g, lst in food_groups.items()
+        },
+        'weights': {
+            'nutritional_value': 0.25,
+            'nutrient_density': 0.2,
+            'environmental_impact': 0.25,
+            'affordability': 0.15,
+            'sustainability': 0.15
+        }
+    }
+    
+    config = {
+        'parameters': parameters,
+        'benders_tolerance': 1e-3,
+        'benders_max_iterations': 100,
+        'pulp_time_limit': 120,
+        'use_multi_cut': True,
+        'use_trust_region': True,
+        'use_anticycling': True,
+        'use_norm_cuts': True,
+        'quantum_settings': {
+            'max_qubits': 20,
+            'use_qaoa_squared': True,
+            'force_qaoa_squared': True
+        }
+    }
+    
+    logger.info(f"Loaded full_family data for {len(farms)} farms (from sampler) and {len(foods)} foods")
     
     return farms, foods, food_groups, config
 

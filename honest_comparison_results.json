@@ -1,0 +1,55 @@
+{
+  "milp": {
+    "objective": 0.5889,
+    "time": 0.24036216735839844,
+    "selection": {
+      "Farm1": [
+        "Corn",
+        "Soy",
+        "Tomato"
+      ],
+      "Farm2": [
+        "Corn",
+        "Soy",
+        "Tomato"
+      ]
+    }
+  },
+  "classical_qubo": {
+    "cost": -44.528099999999995,
+    "time": 0.003176450729370117,
+    "selection": {
+      "Farm1": [
+        "Wheat",
+        "Corn",
+        "Soy",
+        "Tomato"
+      ],
+      "Farm2": [
+        "Wheat",
+        "Corn",
+        "Soy",
+        "Tomato"
+      ]
+    },
+    "approx_objective": 0.048100000000000004
+  },
+  "quantum_gas": {
+    "cost": -33.79665,
+    "time": 1.8507375717163086,
+    "selection": {
+      "Farm1": [
+        "Corn",
+        "Soy",
+        "Tomato"
+      ],
+      "Farm2": [
+        "Wheat",
+        "Corn",
+        "Tomato"
+      ]
+    },
+    "is_optimal": false,
+    "solution_match": false
+  }
+}
