@@ -1,0 +1,16 @@
+[
+  {
+    "n_farms": 5000,
+    "n_foods": 27,
+    "n_vars": 270000,
+    "n_constraints": 325000,
+    "problem_size": 135000,
+    "pulp_time": 85.42527961730957,
+    "pulp_status": "Optimal",
+    "pulp_objective": 0.4246773768389973,
+    "dwave_time": null,
+    "qpu_time": null,
+    "hybrid_time": null,
+    "dwave_feasible": false
+  }
+]

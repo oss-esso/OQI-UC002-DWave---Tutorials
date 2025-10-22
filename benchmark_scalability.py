@@ -20,11 +20,12 @@ import pulp as pl
 
 # Benchmark configurations
 # Format: number of farms to test with full_family scenario
+# 30 points logarithmically scaled from 5 to 1535 farms
 BENCHMARK_CONFIGS = [
-    2500,
-    3000,
-    3500,
-    4000,
+    5, 6, 7, 8, 9, 11, 12, 14, 16, 19, 
+    22, 25, 29, 34, 39, 46, 53, 62, 72, 83, 
+    97, 113, 131, 152, 177, 206, 240, 279, 325, 379, 
+    441, 513, 597, 695, 809, 942, 1096, 1276, 1485, 1535
 ]
 
 def load_full_family_with_n_farms(n_farms, seed=42):
@@ -74,14 +75,11 @@ def load_full_family_with_n_farms(n_farms, seed=42):
             'Fruits': ['Apples'],
         }
     else:
-        # Load from Excel (same logic as in analyze_pulp_scaling.py)
+        # Load from Excel - USE ALL FOODS, not just 2 per group
         df = pd.read_excel(excel_path)
         
-        # Sample 2 per group
-        sampled = df.groupby('food_group').apply(
-            lambda x: x.sample(n=min(len(x), 2), random_state=seed)
-        ).reset_index(drop=True)
-        foods_list = sampled['Food_Name'].tolist()
+        # Use ALL foods from the dataset
+        foods_list = df['Food_Name'].tolist()
         
         filt = df[df['Food_Name'].isin(foods_list)][['Food_Name', 'food_group',
                                                        'nutritional_value', 'nutrient_density',
@@ -114,8 +112,14 @@ def load_full_family_with_n_farms(n_farms, seed=42):
                 food_groups[g] = []
             food_groups[g].append(fname)
     
-    # Set minimum planting areas
-    min_areas = {food: 0.01 for food in foods.keys()}
+    # Set minimum planting areas based on smallest farm and number of food groups
+    smallest_farm = min(L.values())
+    n_food_groups = len(food_groups)
+    # Each farm must plant at least 1 crop from each food group
+    # Reserve some margin for safety
+    min_area_per_crop = (smallest_farm / n_food_groups) * 0.9  # 90% safety margin
+    
+    min_areas = {food: min_area_per_crop for food in foods.keys()}
     
     # Build config
     parameters = {
@@ -124,7 +128,7 @@ def load_full_family_with_n_farms(n_farms, seed=42):
         'max_percentage_per_crop': {food: 0.4 for food in foods},
         'social_benefit': {farm: 0.2 for farm in farms},
         'food_group_constraints': {
-            g: {'min_foods': 2, 'max_foods': len(lst)}
+            g: {'min_foods': 1, 'max_foods': len(lst)}  # At least 1 food per group
             for g, lst in food_groups.items()
         },
         'weights': {
@@ -172,19 +176,24 @@ def run_benchmark(n_farms):
         print(f"    Status: {pulp_results['status']}")
         print(f"    Time: {pulp_time:.3f}s")
         
-        # Solve with DWave (can handle up to ~10,000 variables)
+        # Solve with DWave (always attempt, diagnose failures)
         dwave_time = None
         qpu_time = None
         hybrid_time = None
         dwave_feasible = False
         
         print(f"\n  Solving with DWave...")
+        
+        
         try:
             # Create CQM
+            print(f"    Creating CQM model...")
             cqm, A, Y, constraint_metadata = create_cqm(farms, foods, food_groups, config)
+            print(f"    ✅ CQM created: {len(cqm.variables)} vars, {len(cqm.constraints)} constraints")
             
             # Solve
             token = os.getenv('DWAVE_API_TOKEN', '45FS-23cfb48dca2296ed24550846d2e7356eb6c19551')
+            print(f"    Submitting to D-Wave Leap...")
             sampleset, dwave_time = solve_with_dwave(cqm, token)
             
             # Extract timing info
@@ -195,12 +204,17 @@ def run_benchmark(n_farms):
             feasible_sampleset = sampleset.filter(lambda d: d.is_feasible)
             dwave_feasible = len(feasible_sampleset) > 0
             
-            print(f"    Time: {dwave_time:.3f}s")
+            print(f"    ✅ Time: {dwave_time:.3f}s")
             print(f"    QPU Time: {qpu_time:.6f}s" if qpu_time else "    QPU Time: N/A")
             print(f"    Hybrid Time: {hybrid_time:.3f}s" if hybrid_time else "    Hybrid Time: N/A")
             print(f"    Feasible: {dwave_feasible}")
+            print(f"    Total samples: {len(sampleset)}")
+            print(f"    Feasible samples: {len(feasible_sampleset)}")
         except Exception as e:
-            print(f"    DWave Error: {e}")
+            print(f"\n    ❌ DWAVE FAILED")
+            print(f"    Error: {e}")
+            print(f"    Error type: {type(e).__name__}")
+            
         
         result = {
             'n_farms': n_farms,
