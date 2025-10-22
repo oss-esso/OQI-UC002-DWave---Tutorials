@@ -30,6 +30,15 @@ import pulp as pl
 from tqdm import tqdm
 from piecewise_approximation import PiecewiseApproximation
 
+# Try to import Pyomo for true non-linear solving
+try:
+    import pyomo.environ as pyo
+    from pyomo.opt import SolverFactory
+    PYOMO_AVAILABLE = True
+except ImportError:
+    PYOMO_AVAILABLE = False
+    print("Warning: Pyomo not available. Install with: pip install pyomo")
+
 def create_cqm(farms, foods, food_groups, config, power=0.548, num_breakpoints=10):
     """
     Creates a CQM for the food optimization problem with piecewise linear approximation.
@@ -172,6 +181,8 @@ def create_cqm(farms, foods, food_groups, config, power=0.548, num_breakpoints=1
             )
             pbar.update(1)
     
+    # Normalize by total area to match PuLP and Pyomo formulations
+    objective = objective / total_area
     cqm.set_objective(-objective)
     
     # Constraint metadata
@@ -288,38 +299,126 @@ def create_cqm(farms, foods, food_groups, config, power=0.548, num_breakpoints=1
     
     return cqm, A, Y, Lambda, constraint_metadata, approximation_metadata
 
-def solve_with_pulp(farms, foods, food_groups, config):
-    """Solve with PuLP and return model and results."""
+def solve_with_pulp(farms, foods, food_groups, config, power=0.548, num_breakpoints=10):
+    """
+    Solve with PuLP using piecewise linear approximation for non-linear objective.
+    
+    Args:
+        farms: List of farm names
+        foods: Dictionary of food data
+        food_groups: Dictionary of food groups
+        config: Configuration dictionary
+        power: Power for non-linear objective (default: 0.548)
+        num_breakpoints: Number of interior breakpoints for piecewise approximation
+    
+    Returns model and results.
+    """
     params = config['parameters']
     land_availability = params['land_availability']
     weights = params['weights']
     min_planting_area = params.get('minimum_planting_area', {})
     food_group_constraints = params.get('food_group_constraints', {})
     
+    print(f"\nCreating PuLP model with piecewise linear approximation...")
+    print(f"  Power: {power}, Breakpoints: {num_breakpoints}")
+    
+    # Create piecewise approximations
+    approximations = {}
+    unique_max_lands = set(land_availability.values())
+    
+    for max_val in unique_max_lands:
+        approx = PiecewiseApproximation(power=power, num_points=num_breakpoints, max_value=max_val)
+        approximations[max_val] = approx
+    
+    # Decision variables
     A_pulp = pl.LpVariable.dicts("Area", [(f, c) for f in farms for c in foods], lowBound=0)
     Y_pulp = pl.LpVariable.dicts("Choose", [(f, c) for f in farms for c in foods], cat='Binary')
     
+    # Lambda variables for piecewise approximation
+    Lambda_pulp = {}
+    for f in farms:
+        max_val = land_availability[f]
+        approx = approximations[max_val]
+        n_breakpoints_total = len(approx.breakpoints)
+        
+        for c in foods:
+            Lambda_pulp[(f, c)] = {}
+            for i in range(n_breakpoints_total):
+                Lambda_pulp[(f, c)][i] = pl.LpVariable(
+                    f"Lambda_{f}_{c}_{i}",
+                    lowBound=0,
+                    upBound=1,
+                    cat='Continuous'
+                )
+    
+    # Create model
+    model = pl.LpProblem("Food_Optimization_NLN_PuLP", pl.LpMaximize)
+    
+    # Piecewise approximation constraints
+    for f in farms:
+        max_val = land_availability[f]
+        approx = approximations[max_val]
+        n_breakpoints_total = len(approx.breakpoints)
+        
+        for c in foods:
+            # A = sum of lambda_i * breakpoint_i
+            model += (
+                A_pulp[(f, c)] == pl.lpSum([
+                    Lambda_pulp[(f, c)][i] * approx.breakpoints[i] 
+                    for i in range(n_breakpoints_total)
+                ]),
+                f"Piecewise_A_{f}_{c}"
+            )
+            
+            # Convexity: sum of lambda_i = 1
+            model += (
+                pl.lpSum([Lambda_pulp[(f, c)][i] for i in range(n_breakpoints_total)]) == 1,
+                f"Convexity_{f}_{c}"
+            )
+    
+    # Objective function using piecewise approximation
+    # f_approx = sum of lambda_i * f(breakpoint_i)
     total_area = sum(land_availability[f] for f in farms)
     
-    goal = (
-        weights.get('nutritional_value', 0) * pl.lpSum([(foods[c].get('nutritional_value', 0) * A_pulp[(f, c)]) for f in farms for c in foods]) / total_area +
-        weights.get('nutrient_density', 0) * pl.lpSum([(foods[c].get('nutrient_density', 0) * A_pulp[(f, c)]) for f in farms for c in foods]) / total_area -
-        weights.get('environmental_impact', 0) * pl.lpSum([(foods[c].get('environmental_impact', 0) * A_pulp[(f, c)]) for f in farms for c in foods]) / total_area +
-        weights.get('affordability', 0) * pl.lpSum([(foods[c].get('affordability', 0) * A_pulp[(f, c)]) for f in farms for c in foods]) / total_area +
-        weights.get('sustainability', 0) * pl.lpSum([(foods[c].get('sustainability', 0) * A_pulp[(f, c)]) for f in farms for c in foods]) / total_area
-    )
+    objective_terms = []
+    for f in farms:
+        max_val = land_availability[f]
+        approx = approximations[max_val]
+        n_breakpoints_total = len(approx.breakpoints)
+        
+        for c in foods:
+            # Approximated f(A) value
+            f_approx = pl.lpSum([
+                Lambda_pulp[(f, c)][i] * approx.function_values[i]
+                for i in range(n_breakpoints_total)
+            ])
+            
+            # Add to objective with weights
+            coeff = (
+                weights.get('nutritional_value', 0) * foods[c].get('nutritional_value', 0) +
+                weights.get('nutrient_density', 0) * foods[c].get('nutrient_density', 0) -
+                weights.get('environmental_impact', 0) * foods[c].get('environmental_impact', 0) +
+                weights.get('affordability', 0) * foods[c].get('affordability', 0) +
+                weights.get('sustainability', 0) * foods[c].get('sustainability', 0)
+            )
+            
+            objective_terms.append(coeff * f_approx)
     
-    model = pl.LpProblem("Food_Optimization", pl.LpMaximize)
+    goal = pl.lpSum(objective_terms) / total_area
+    model += goal, "Objective"
     
+    # Land availability constraints
     for f in farms:
         model += pl.lpSum([A_pulp[(f, c)] for c in foods]) <= land_availability[f], f"Max_Area_{f}"
     
+    # Linking constraints (binary selection)
     for f in farms:
         for c in foods:
             A_min = min_planting_area.get(c, 0)
             model += A_pulp[(f, c)] >= A_min * Y_pulp[(f, c)], f"MinArea_{f}_{c}"
             model += A_pulp[(f, c)] <= land_availability[f] * Y_pulp[(f, c)], f"MaxArea_{f}_{c}"
     
+    # Food group constraints
     if food_group_constraints:
         for g, constraints in food_group_constraints.items():
             foods_in_group = food_groups.get(g, [])
@@ -330,8 +429,8 @@ def solve_with_pulp(farms, foods, food_groups, config):
                     if 'max_foods' in constraints:
                         model += pl.lpSum([Y_pulp[(f, c)] for c in foods_in_group]) <= constraints['max_foods'], f"MaxFoodGroup_{f}_{g}"
     
-    model += goal, "Objective"
-    
+    # Solve
+    print("  Solving with CBC...")
     start_time = time.time()
     model.solve(pl.PULP_CBC_CMD(msg=0))
     solve_time = time.time() - start_time
@@ -342,7 +441,8 @@ def solve_with_pulp(farms, foods, food_groups, config):
         'objective_value': pl.value(model.objective),
         'solve_time': solve_time,
         'areas': {},
-        'selections': {}
+        'selections': {},
+        'lambda_values': {}
     }
     
     for f in farms:
@@ -350,6 +450,15 @@ def solve_with_pulp(farms, foods, food_groups, config):
             key = f"{f}_{c}"
             results['areas'][key] = A_pulp[(f, c)].value() if A_pulp[(f, c)].value() is not None else 0.0
             results['selections'][key] = Y_pulp[(f, c)].value() if Y_pulp[(f, c)].value() is not None else 0.0
+            
+            # Store lambda values for verification
+            max_val = land_availability[f]
+            approx = approximations[max_val]
+            n_breakpoints_total = len(approx.breakpoints)
+            results['lambda_values'][key] = [
+                Lambda_pulp[(f, c)][i].value() if Lambda_pulp[(f, c)][i].value() is not None else 0.0
+                for i in range(n_breakpoints_total)
+            ]
     
     return model, results
 
@@ -363,6 +472,205 @@ def solve_with_dwave(cqm, token):
     solve_time = time.time() - start_time
     
     return sampleset, solve_time
+
+def solve_with_pyomo(farms, foods, food_groups, config, power=0.548):
+    """
+    Solve with Pyomo using TRUE non-linear objective (no approximation).
+    This uses the actual f(A) = A^power function directly.
+    
+    Args:
+        farms: List of farm names
+        foods: Dictionary of food data
+        food_groups: Dictionary of food groups
+        config: Configuration dictionary
+        power: Power for non-linear objective (default: 0.548)
+    
+    Returns model and results.
+    """
+    if not PYOMO_AVAILABLE:
+        print("ERROR: Pyomo is not installed. Skipping Pyomo solver.")
+        return None, {
+            'status': 'Not Available',
+            'objective_value': None,
+            'solve_time': 0.0,
+            'areas': {},
+            'selections': {},
+            'error': 'Pyomo not installed'
+        }
+    
+    params = config['parameters']
+    land_availability = params['land_availability']
+    weights = params['weights']
+    min_planting_area = params.get('minimum_planting_area', {})
+    food_group_constraints = params.get('food_group_constraints', {})
+    
+    print(f"\nCreating Pyomo model with TRUE non-linear objective f(A) = A^{power}...")
+    
+    # Create model
+    model = pyo.ConcreteModel(name="Food_Optimization_NLN_Pyomo")
+    
+    # Sets
+    model.farms = pyo.Set(initialize=farms)
+    model.foods = pyo.Set(initialize=list(foods.keys()))
+    
+    # Variables
+    # Add small epsilon to avoid 0^0.548 evaluation issues in IPOPT
+    epsilon = 1e-6
+    model.A = pyo.Var(model.farms, model.foods, domain=pyo.NonNegativeReals,
+                      bounds=lambda m, f, c: (epsilon, land_availability[f]))
+    model.Y = pyo.Var(model.farms, model.foods, domain=pyo.Binary)
+    
+    # Objective function with TRUE power function
+    total_area = sum(land_availability[f] for f in farms)
+    
+    def objective_rule(m):
+        obj = 0
+        for f in m.farms:
+            for c in m.foods:
+                # TRUE non-linear objective: A^power
+                coeff = (
+                    weights.get('nutritional_value', 0) * foods[c].get('nutritional_value', 0) +
+                    weights.get('nutrient_density', 0) * foods[c].get('nutrient_density', 0) -
+                    weights.get('environmental_impact', 0) * foods[c].get('environmental_impact', 0) +
+                    weights.get('affordability', 0) * foods[c].get('affordability', 0) +
+                    weights.get('sustainability', 0) * foods[c].get('sustainability', 0)
+                )
+                # Use the power function directly - this is the key difference!
+                obj += coeff * (m.A[f, c] ** power)
+        return obj / total_area
+    
+    model.obj = pyo.Objective(rule=objective_rule, sense=pyo.maximize)
+    
+    # Land availability constraints
+    def land_constraint_rule(m, f):
+        return sum(m.A[f, c] for c in m.foods) <= land_availability[f]
+    model.land_constraint = pyo.Constraint(model.farms, rule=land_constraint_rule)
+    
+    # Linking constraints (binary selection)
+    def min_area_rule(m, f, c):
+        A_min = min_planting_area.get(c, 0)
+        return m.A[f, c] >= A_min * m.Y[f, c]
+    model.min_area = pyo.Constraint(model.farms, model.foods, rule=min_area_rule)
+    
+    def max_area_rule(m, f, c):
+        return m.A[f, c] <= land_availability[f] * m.Y[f, c]
+    model.max_area = pyo.Constraint(model.farms, model.foods, rule=max_area_rule)
+    
+    # Food group constraints
+    if food_group_constraints:
+        def min_food_group_rule(m, f, g):
+            foods_in_group = food_groups.get(g, [])
+            min_foods = food_group_constraints[g].get('min_foods', None)
+            if min_foods is not None and foods_in_group:
+                return sum(m.Y[f, c] for c in foods_in_group if c in m.foods) >= min_foods
+            else:
+                return pyo.Constraint.Skip
+        
+        def max_food_group_rule(m, f, g):
+            foods_in_group = food_groups.get(g, [])
+            max_foods = food_group_constraints[g].get('max_foods', None)
+            if max_foods is not None and foods_in_group:
+                return sum(m.Y[f, c] for c in foods_in_group if c in m.foods) <= max_foods
+            else:
+                return pyo.Constraint.Skip
+        
+        model.min_food_group = pyo.Constraint(
+            model.farms, 
+            list(food_group_constraints.keys()), 
+            rule=min_food_group_rule
+        )
+        model.max_food_group = pyo.Constraint(
+            model.farms, 
+            list(food_group_constraints.keys()), 
+            rule=max_food_group_rule
+        )
+    
+    # Try to find an available MINLP solver
+    # Order of preference: bonmin, couenne, ipopt
+    solver_name = None
+    solver = None
+    
+    print("  Searching for available MINLP solvers...")
+    
+    # First, try to find ipopt in conda environment
+    conda_env_path = os.path.join(sys.prefix, 'Library', 'bin', 'ipopt.exe')
+    if os.path.exists(conda_env_path):
+        try:
+            solver = pyo.SolverFactory('ipopt', executable=conda_env_path)
+            solver_name = 'ipopt'
+            print(f"  Found solver: {solver_name} at {conda_env_path}")
+        except Exception as e:
+            print(f"  Could not load ipopt from conda: {e}")
+    
+    # If not found, try standard solver detection
+    if solver is None:
+        solver_options = ['bonmin', 'couenne', 'ipopt']
+        for solver_opt in solver_options:
+            try:
+                test_solver = pyo.SolverFactory(solver_opt)
+                if test_solver.available():
+                    solver_name = solver_opt
+                    solver = test_solver
+                    print(f"  Found solver: {solver_name}")
+                    break
+            except Exception as e:
+                continue
+    
+    if solver is None:
+        print("  ERROR: No suitable solver found.")
+        print("  Install one of: bonmin, couenne, or ipopt")
+        print("  For conda: conda install -c conda-forge ipopt")
+        print("  For pip: pip install cyipopt")
+        return model, {
+            'status': 'No Solver',
+            'objective_value': None,
+            'solve_time': 0.0,
+            'areas': {},
+            'selections': {},
+            'error': 'No MINLP solver available'
+        }
+    
+    # Solve
+    print(f"  Solving with {solver_name}...")
+    start_time = time.time()
+    
+    try:
+        results = solver.solve(model, tee=False)
+        solve_time = time.time() - start_time
+        
+        # Extract results
+        status = str(results.solver.status)
+        termination = str(results.solver.termination_condition)
+        
+        output = {
+            'status': f"{status} ({termination})",
+            'solver': solver_name,
+            'objective_value': pyo.value(model.obj) if pyo.value(model.obj) is not None else None,
+            'solve_time': solve_time,
+            'areas': {},
+            'selections': {}
+        }
+        
+        for f in farms:
+            for c in foods:
+                key = f"{f}_{c}"
+                output['areas'][key] = pyo.value(model.A[f, c]) if model.A[f, c].value is not None else 0.0
+                output['selections'][key] = pyo.value(model.Y[f, c]) if model.Y[f, c].value is not None else 0.0
+        
+        return model, output
+        
+    except Exception as e:
+        solve_time = time.time() - start_time
+        print(f"  ERROR during solving: {str(e)}")
+        return model, {
+            'status': 'Error',
+            'solver': solver_name,
+            'objective_value': None,
+            'solve_time': solve_time,
+            'areas': {},
+            'selections': {},
+            'error': str(e)
+        }
 
 def main(scenario='simple', power=0.548, num_breakpoints=10):
     """Main execution function."""
@@ -434,23 +742,134 @@ def main(scenario='simple', power=0.548, num_breakpoints=10):
     with open(constraints_path, 'w') as f:
         json.dump(constraints_json, f, indent=2)
     
+    # Solve with PuLP (piecewise approximation)
     print("\n" + "=" * 80)
-    print("CQM CREATION COMPLETE")
+    print("SOLVING WITH PULP (Piecewise Linear Approximation)")
+    print("=" * 80)
+    pulp_model, pulp_results = solve_with_pulp(farms, foods, food_groups, config, power=power, num_breakpoints=num_breakpoints)
+    print(f"  Status: {pulp_results['status']}")
+    print(f"  Objective: {pulp_results['objective_value']:.6f}")
+    print(f"  Solve time: {pulp_results['solve_time']:.2f} seconds")
+    
+    # Save PuLP results
+    pulp_path = f'PuLP_Results_NLN/pulp_nln_{scenario}_{timestamp}.json'
+    print(f"\nSaving PuLP results to {pulp_path}...")
+    with open(pulp_path, 'w') as f:
+        json.dump(pulp_results, f, indent=2)
+    
+    # Solve with Pyomo (TRUE non-linear objective)
+    print("\n" + "=" * 80)
+    print("SOLVING WITH PYOMO (TRUE Non-Linear Objective)")
+    print("=" * 80)
+    pyomo_model, pyomo_results = solve_with_pyomo(farms, foods, food_groups, config, power=power)
+    
+    if pyomo_results.get('error'):
+        print(f"  Status: {pyomo_results['status']}")
+        print(f"  Error: {pyomo_results.get('error')}")
+    else:
+        print(f"  Solver: {pyomo_results.get('solver', 'Unknown')}")
+        print(f"  Status: {pyomo_results['status']}")
+        if pyomo_results['objective_value'] is not None:
+            print(f"  Objective: {pyomo_results['objective_value']:.6f}")
+        print(f"  Solve time: {pyomo_results['solve_time']:.2f} seconds")
+    
+    # Save Pyomo results
+    pyomo_path = f'PuLP_Results_NLN/pyomo_nln_{scenario}_{timestamp}.json'
+    print(f"\nSaving Pyomo results to {pyomo_path}...")
+    
+    # Convert to JSON-serializable format
+    pyomo_results_serializable = {
+        k: (float(v) if isinstance(v, (np.floating, np.integer)) else v)
+        for k, v in pyomo_results.items()
+        if k != 'lambda_values'  # Skip lambda values for Pyomo
+    }
+    
+    with open(pyomo_path, 'w') as f:
+        json.dump(pyomo_results_serializable, f, indent=2)
+    
+    # Solve with DWave
+    print("\n" + "=" * 80)
+    print("SOLVING WITH DWAVE (Piecewise Approximation)")
+    print("=" * 80)
+    
+    token = os.getenv('DWAVE_API_TOKEN', '45FS-23cfb48dca2296ed24550846d2e7356eb6c19551')
+    if token:
+        try:
+            sampleset, dwave_solve_time = solve_with_dwave(cqm, token)
+            
+            feasible_sampleset = sampleset.filter(lambda d: d.is_feasible)
+            print(f"  Feasible solutions: {len(feasible_sampleset)} of {len(sampleset)}")
+            print(f"  Total solve time: {dwave_solve_time:.2f} seconds")
+            
+            if feasible_sampleset:
+                best = feasible_sampleset.first
+                print(f"  Best energy: {best.energy:.6f}")
+                
+                # Extract timing info
+                timing_info = sampleset.info.get('timing', {})
+                qpu_time = timing_info.get('qpu_access_time', 0) / 1e6  # Convert to seconds
+                print(f"  QPU access time: {qpu_time:.4f} seconds")
+            else:
+                print("  WARNING: No feasible solutions found")
+            
+            # Save DWave results
+            dwave_path = f'DWave_Results_NLN/dwave_nln_{scenario}_{timestamp}.pickle'
+            print(f"\nSaving DWave results to {dwave_path}...")
+            os.makedirs('DWave_Results_NLN', exist_ok=True)
+            with open(dwave_path, 'wb') as f:
+                pickle.dump(sampleset, f)
+            
+        except Exception as e:
+            print(f"  ERROR: DWave solving failed: {str(e)}")
+            dwave_path = None
+    else:
+        print("  DWave API token not found in environment")
+        print("  Set DWAVE_API_TOKEN environment variable to enable DWave solving")
+        dwave_path = None
+    
+    # Compare results if multiple solvers succeeded
+    print("\n" + "=" * 80)
+    print("COMPARISON SUMMARY")
+    print("=" * 80)
+    
+    if pulp_results['status'] == 'Optimal':
+        print(f"  PuLP (approx):    {pulp_results['objective_value']:.6f}  |  {pulp_results['solve_time']:.2f}s")
+    
+    if pyomo_results.get('objective_value') is not None:
+        print(f"  Pyomo (true NLN): {pyomo_results['objective_value']:.6f}  |  {pyomo_results['solve_time']:.2f}s")
+    
+    if dwave_path and feasible_sampleset:
+        dwave_obj = -best.energy  # Convert energy back to objective
+        print(f"  DWave (approx):   {dwave_obj:.6f}  |  {dwave_solve_time:.2f}s")
+    
+    # Detailed comparison if we have ground truth
+    if pulp_results['status'] == 'Optimal' and pyomo_results.get('objective_value') is not None:
+        print("\n  Approximation Quality:")
+        pulp_obj = pulp_results['objective_value']
+        pyomo_obj = pyomo_results['objective_value']
+        diff = abs(pulp_obj - pyomo_obj)
+        rel_diff = (diff / abs(pyomo_obj) * 100) if pyomo_obj != 0 else 0
+        print(f"    PuLP vs Pyomo: {rel_diff:.2f}% difference")
+        
+        if dwave_path and feasible_sampleset:
+            dwave_diff = abs(dwave_obj - pyomo_obj)
+            dwave_rel_diff = (dwave_diff / abs(pyomo_obj) * 100) if pyomo_obj != 0 else 0
+            print(f"    DWave vs Pyomo: {dwave_rel_diff:.2f}% difference")
+    
+    print("\n" + "=" * 80)
+    print("SOLVER RUN COMPLETE")
     print("=" * 80)
     print(f"CQM saved to: {cqm_path}")
     print(f"Constraints saved to: {constraints_path}")
+    print(f"PuLP results saved to: {pulp_path}")
+    print(f"Pyomo results saved to: {pyomo_path}")
+    if dwave_path:
+        print(f"DWave results saved to: {dwave_path}")
     print(f"\nNon-linear objective: f(A) = A^{power}")
-    print(f"Piecewise approximation: {num_breakpoints} interior points")
-    print(f"Total variables: {len(cqm.variables)}")
-    print(f"Total constraints: {len(cqm.constraints)}")
+    print(f"PuLP & DWave: Piecewise approximation with {num_breakpoints} interior points")
+    print(f"Pyomo: True non-linear objective (no approximation)")
     
-    # Skip PuLP and DWave solving for now - just verify CQM creation
-    print("\n" + "=" * 80)
-    print("NOTE: PuLP and DWave solving skipped (token removed for testing)")
-    print("CQM model created successfully and saved.")
-    print("=" * 80)
-    
-    return cqm_path, constraints_path
+    return cqm_path, constraints_path, pulp_path, pyomo_path, dwave_path if dwave_path else None
 
 if __name__ == "__main__":
     import argparse
