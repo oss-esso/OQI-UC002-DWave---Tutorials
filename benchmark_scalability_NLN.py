@@ -23,7 +23,7 @@ import pulp as pl
 # 6 points logarithmically scaled from 5 to 1535 farms
 # Reduced from 30 points for faster testing with multiple runs
 BENCHMARK_CONFIGS = [
-    72
+    5, 19, 72, 279, 1096, 1535
 ]
 
 # Number of runs per configuration for statistical analysis
@@ -219,14 +219,49 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
             print(f"    Time: {pyomo_time:.3f}s")
             pyomo_objective = pyomo_results.get('objective_value')
         
-        # DWave solving is SKIPPED (no token)
+        # Solve with DWave
+        print(f"\n  Solving with DWave...")
+        token = os.getenv('DWAVE_API_TOKEN', '45FS-23cfb48dca2296ed24550846d2e7356eb6c19551')
+        
         dwave_time = None
         qpu_time = None
         hybrid_time = None
         dwave_feasible = False
         dwave_objective = None
-        
-        print(f"\n  DWave: SKIPPED (no token)")
+
+        if not token:
+            print(f"    SKIPPED: DWAVE_API_TOKEN not found.")
+        else:
+            try:
+                sampleset, dwave_time = solve_with_dwave(cqm, token)
+
+                feasible_sampleset = sampleset.filter(lambda d: d.is_feasible)
+                dwave_feasible = len(feasible_sampleset) > 0
+
+                if dwave_feasible:
+                    best = feasible_sampleset.first
+                    dwave_objective = -best.energy
+                    timing_info = sampleset.info.get('timing', {})
+                    qpu_time = timing_info.get('qpu_access_time')
+                    if qpu_time:
+                        qpu_time /= 1e6 # convert microseconds to seconds
+                    
+                    hybrid_time = timing_info.get('charge_time')
+                    if hybrid_time:
+                        hybrid_time /= 1e6 # convert microseconds to seconds
+
+                    print(f"    Status: {len(feasible_sampleset)} feasible solutions")
+                    print(f"    Objective: {dwave_objective:.6f}")
+                    print(f"    Total Time: {dwave_time:.3f}s")
+                    if hybrid_time:
+                        print(f"    Charge Time: {hybrid_time:.3f}s")
+                    if qpu_time:
+                        print(f"    QPU Access Time: {qpu_time:.4f}s")
+                else:
+                    print("    Status: No feasible solutions found")
+
+            except Exception as e:
+                print(f"    ERROR: DWave solving failed: {str(e)}")
         
         # Calculate approximation error if we have Pyomo solution
         pulp_error = None

@@ -1,0 +1,26 @@
+[
+  {
+    "n_farms": 72,
+    "n_foods": 27,
+    "problem_size": 1944,
+    "n_vars_base": 3888,
+    "n_lambda_vars": 23328,
+    "n_vars_total": 27216,
+    "n_constraints": 8568,
+    "cqm_time_mean": 3.6522778034210206,
+    "cqm_time_std": 0.06346962421279757,
+    "pulp_time_mean": 4.474974346160889,
+    "pulp_time_std": 0.45871187941733155,
+    "pulp_time_min": 3.7655527591705322,
+    "pulp_time_max": 5.181299686431885,
+    "pyomo_time_mean": 0.6822813987731934,
+    "pyomo_time_std": 0.04773245192571848,
+    "pyomo_time_min": 0.6512465476989746,
+    "pyomo_time_max": 0.7767629623413086,
+    "pulp_error_mean": 20.01833840306025,
+    "pulp_error_std": 0.23621165049643433,
+    "num_runs": 5,
+    "power": 0.548,
+    "num_breakpoints": 10
+  }
+]
