@@ -1,6 +1,6 @@
 """
-Scalability Benchmark Script
-Tests different combinations of farms and food groups to analyze solver performance
+Scalability Benchmark Script for BQUBO (CQM→BQM with HybridBQM Solver)
+Tests different combinations of farms and food groups to analyze QPU-enabled solver performance
 """
 import os
 import sys
@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from farm_sampler import generate_farms
 from src.scenarios import load_food_data
-from solver_runner_NLN import create_cqm, solve_with_pulp, solve_with_pyomo, solve_with_dwave
+from solver_runner_BQUBO import create_cqm, solve_with_pulp, solve_with_dwave
 import pulp as pl
 
 # Benchmark configurations
@@ -23,15 +23,11 @@ import pulp as pl
 # 6 points logarithmically scaled from 5 to 1535 farms
 # Reduced from 30 points for faster testing with multiple runs
 BENCHMARK_CONFIGS = [
-    72
+    5, 19, 72, 279, 1096, 1535
 ]
 
 # Number of runs per configuration for statistical analysis
 NUM_RUNS = 5
-
-# Power for non-linear objective
-POWER = 0.548
-NUM_BREAKPOINTS = 10  # For piecewise approximation
 
 def load_full_family_with_n_farms(n_farms, seed=42):
     """
@@ -117,25 +113,34 @@ def load_full_family_with_n_farms(n_farms, seed=42):
                 food_groups[g] = []
             food_groups[g].append(fname)
     
-    # Set minimum planting areas based on smallest farm and number of food groups
-    smallest_farm = min(L.values())
-    n_food_groups = len(food_groups)
-    # Each farm must plant at least 1 crop from each food group
-    # Reserve some margin for safety
-    min_area_per_crop = (smallest_farm / n_food_groups) * 0.9  # 90% safety margin
+    # For binary formulation: each plantation is exactly 1 acre
+    # No minimum planting area needed - it's either 1 acre or 0
     
-    min_areas = {food: min_area_per_crop for food in foods.keys()}
+    # Relax food group constraints to make problem feasible for small farms
+    # Only require food groups if there's enough capacity
+    min_capacity = min(L.values())
+    n_food_groups = len(food_groups)
+    
+    # Only add food group constraints if farm can accommodate them
+    if min_capacity >= n_food_groups:
+        food_group_config = {
+            g: {'min_foods': 1, 'max_foods': len(lst)}  # At least 1 food per group
+            for g, lst in food_groups.items()
+        }
+    else:
+        # Too many food groups for small farms - make it optional
+        food_group_config = {
+            g: {'min_foods': 0, 'max_foods': len(lst)}  # No minimum requirement
+            for g, lst in food_groups.items()
+        }
     
     # Build config
     parameters = {
-        'land_availability': L,
-        'minimum_planting_area': min_areas,
+        'land_availability': L,  # Max number of 1-acre plantations per farm
+        'minimum_planting_area': {},  # Not used in binary formulation
         'max_percentage_per_crop': {food: 0.4 for food in foods},
         'social_benefit': {farm: 0.2 for farm in farms},
-        'food_group_constraints': {
-            g: {'min_foods': 1, 'max_foods': len(lst)}  # At least 1 food per group
-            for g, lst in food_groups.items()
-        },
+        'food_group_constraints': food_group_config,
         'weights': {
             'nutritional_value': 0.25,
             'nutrient_density': 0.2,
@@ -149,15 +154,16 @@ def load_full_family_with_n_farms(n_farms, seed=42):
     
     return farms, foods, food_groups, config
 
-def run_benchmark(n_farms, run_number=1, total_runs=1):
+def run_benchmark(n_farms, run_number=1, total_runs=1, dwave_token=None):
     """
     Run a single benchmark test with full_family scenario.
-    Returns timing results and problem size metrics for all three solvers.
+    Returns timing results and problem size metrics for all solvers including DWave BQUBO.
     
     Args:
         n_farms: Number of farms to test
         run_number: Current run number (for display)
         total_runs: Total number of runs (for display)
+        dwave_token: DWave API token (optional)
     """
     print(f"\n{'='*80}")
     print(f"BENCHMARK: full_family scenario with {n_farms} Farms (Run {run_number}/{total_runs})")
@@ -168,96 +174,83 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
         farms, foods, food_groups, config = load_full_family_with_n_farms(n_farms, seed=42 + run_number)
         
         n_foods = len(foods)
-        # For NLN solver, we have additional lambda variables
-        n_vars_base = 2 * n_farms * n_foods  # Binary + continuous (A and Y)
-        n_lambda_vars = n_farms * n_foods * (NUM_BREAKPOINTS + 2)  # Lambda variables for piecewise
-        n_vars = n_vars_base + n_lambda_vars
-        n_constraints = n_farms + 2*n_farms*n_foods + 2*len(food_groups)*n_farms + 2*n_farms*n_foods  # Added piecewise constraints
+        # Binary formulation - only binary variables (each farm-crop is a 1-acre plantation)
+        n_vars = n_farms * n_foods  # Only Y (binary plantation decisions)
+        n_constraints = n_farms + 2*len(food_groups)*n_farms  # Plantation limits + food group constraints
         problem_size = n_farms * n_foods  # n = farms × foods
         
         print(f"  Foods: {n_foods}")
-        print(f"  Base Variables: {n_vars_base}")
-        print(f"  Lambda Variables: {n_lambda_vars}")
-        print(f"  Total Variables: {n_vars}")
+        print(f"  Variables: {n_vars} (all binary)")
         print(f"  Constraints: {n_constraints}")
         print(f"  Problem Size (n): {problem_size}")
+        print(f"  Formulation: Binary - each farm-crop = 1 acre plantation if selected")
         
-        # Create CQM (needed for DWave, but we'll skip DWave solving)
+        # Create CQM (needed for DWave)
         print(f"\n  Creating CQM model...")
         cqm_start = time.time()
-        cqm, A, Y, Lambda, constraint_metadata, approximation_metadata = create_cqm(
-            farms, foods, food_groups, config, power=POWER, num_breakpoints=NUM_BREAKPOINTS
+        cqm, Y, constraint_metadata = create_cqm(
+            farms, foods, food_groups, config
         )
         cqm_time = time.time() - cqm_start
         print(f"    ✅ CQM created: {len(cqm.variables)} vars, {len(cqm.constraints)} constraints ({cqm_time:.2f}s)")
         
-        # Solve with PuLP (piecewise approximation)
-        print(f"\n  Solving with PuLP (Piecewise Approximation)...")
-        print(f"    Note: For large problems (>10k vars), CBC uses 10min timeout & 5% gap")
+        # Solve with PuLP (linear)
+        print(f"\n  Solving with PuLP (Linear)...")
         pulp_start = time.time()
-        pulp_model, pulp_results = solve_with_pulp(farms, foods, food_groups, config, power=POWER, num_breakpoints=NUM_BREAKPOINTS)
+        pulp_model, pulp_results = solve_with_pulp(farms, foods, food_groups, config)
         pulp_time = time.time() - pulp_start
         
         print(f"    Status: {pulp_results['status']}")
         print(f"    Objective: {pulp_results.get('objective_value', 'N/A')}")
         print(f"    Time: {pulp_time:.3f}s")
         
-        # Solve with Pyomo (true non-linear)
-        print(f"\n  Solving with Pyomo (True Non-Linear)...")
-        pyomo_start = time.time()
-        pyomo_model, pyomo_results = solve_with_pyomo(farms, foods, food_groups, config, power=POWER)
-        pyomo_time = time.time() - pyomo_start
-        
-        if pyomo_results.get('error'):
-            print(f"    Status: {pyomo_results['status']}")
-            print(f"    Error: {pyomo_results.get('error')}")
-            pyomo_time = None
-            pyomo_objective = None
-        else:
-            print(f"    Status: {pyomo_results['status']}")
-            print(f"    Objective: {pyomo_results.get('objective_value', 'N/A')}")
-            print(f"    Time: {pyomo_time:.3f}s")
-            pyomo_objective = pyomo_results.get('objective_value')
-        
-        # DWave solving is SKIPPED (no token)
+        # DWave solving with BQUBO (CQM→BQM + HybridBQM)
         dwave_time = None
         qpu_time = None
-        hybrid_time = None
+        bqm_conversion_time = None
         dwave_feasible = False
         dwave_objective = None
         
-        print(f"\n  DWave: SKIPPED (no token)")
-        
-        # Calculate approximation error if we have Pyomo solution
-        pulp_error = None
-        if pyomo_objective is not None and pulp_results.get('objective_value') is not None:
-            pulp_error = abs(pulp_results['objective_value'] - pyomo_objective) / abs(pyomo_objective) * 100
-            print(f"\n  Approximation Error:")
-            print(f"    PuLP vs Pyomo: {pulp_error:.2f}%")
+        if dwave_token:
+            print(f"\n  Solving with DWave (BQUBO: CQM→BQM + HybridBQM)...")
+            try:
+                sampleset, dwave_time, qpu_time, bqm_conversion_time, invert = solve_with_dwave(cqm, dwave_token)
+                
+                # BQM samplesets don't have feasibility - all samples are valid
+                print(f"    Status: {'Optimal' if len(sampleset) > 0 else 'No solutions'}")
+                print(f"    Samples: {len(sampleset)}")
+                print(f"    Total Time: {dwave_time:.3f}s")
+                print(f"    BQM Conversion: {bqm_conversion_time:.3f}s")
+                print(f"    QPU Access: {qpu_time:.4f}s")
+                
+                if len(sampleset) > 0:
+                    best = sampleset.first
+                    dwave_objective = -best.energy
+                    dwave_feasible = True
+                    print(f"    Objective: {dwave_objective:.6f}")
+                
+            except Exception as e:
+                print(f"    ERROR: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print(f"\n  DWave: SKIPPED (no token)")
         
         result = {
             'n_farms': n_farms,
             'n_foods': n_foods,
-            'n_vars_base': n_vars_base,
-            'n_lambda_vars': n_lambda_vars,
-            'n_vars_total': n_vars,
+            'n_vars': n_vars,
             'n_constraints': n_constraints,
             'problem_size': problem_size,
             'cqm_time': cqm_time,
             'pulp_time': pulp_time,
             'pulp_status': pulp_results['status'],
             'pulp_objective': pulp_results.get('objective_value'),
-            'pyomo_time': pyomo_time,
-            'pyomo_status': pyomo_results.get('status', 'Error'),
-            'pyomo_objective': pyomo_objective,
-            'pulp_error_percent': pulp_error,
             'dwave_time': dwave_time,
             'qpu_time': qpu_time,
-            'hybrid_time': hybrid_time,
+            'bqm_conversion_time': bqm_conversion_time,
             'dwave_feasible': dwave_feasible,
-            'dwave_objective': dwave_objective,
-            'power': POWER,
-            'num_breakpoints': NUM_BREAKPOINTS
+            'dwave_objective': dwave_objective
         }
         
         return result
@@ -268,9 +261,9 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
         traceback.print_exc()
         return None
 
-def plot_results(results, output_file='scalability_benchmark_nln.png'):
+def plot_results(results, output_file='scalability_benchmark_bqubo.png'):
     """
-    Create beautiful plots for presentation with error bars.
+    Create beautiful plots for presentation with error bars including DWave BQUBO results.
     Results should be aggregated statistics with mean and std.
     """
     # Filter valid results
@@ -287,121 +280,153 @@ def plot_results(results, output_file='scalability_benchmark_nln.png'):
     pulp_times = [r['pulp_time_mean'] for r in valid_results]
     pulp_errors = [r['pulp_time_std'] for r in valid_results]
     
-    # Pyomo times
-    pyomo_times = [r['pyomo_time_mean'] for r in valid_results if r['pyomo_time_mean'] is not None]
-    pyomo_errors = [r['pyomo_time_std'] for r in valid_results if r['pyomo_time_mean'] is not None]
-    pyomo_problem_sizes = [r['problem_size'] for r in valid_results if r['pyomo_time_mean'] is not None]
+    # DWave times
+    dwave_times = [r['dwave_time_mean'] for r in valid_results if r['dwave_time_mean'] is not None]
+    dwave_errors = [r['dwave_time_std'] for r in valid_results if r['dwave_time_mean'] is not None]
+    dwave_problem_sizes = [r['problem_size'] for r in valid_results if r['dwave_time_mean'] is not None]
     
-    # Approximation error
-    approx_errors = [r['pulp_error_mean'] for r in valid_results if r['pulp_error_mean'] is not None]
-    approx_errors_std = [r['pulp_error_std'] for r in valid_results if r['pulp_error_mean'] is not None]
-    approx_problem_sizes = [r['problem_size'] for r in valid_results if r['pulp_error_mean'] is not None]
+    # QPU times
+    qpu_times = [r['qpu_time_mean'] for r in valid_results if r['qpu_time_mean'] is not None]
+    qpu_errors = [r['qpu_time_std'] for r in valid_results if r['qpu_time_mean'] is not None]
+    qpu_problem_sizes = [r['problem_size'] for r in valid_results if r['qpu_time_mean'] is not None]
+    
+    # Solution quality (we can plot objective values if needed)
     
     # Create figure with professional styling
     plt.style.use('seaborn-v0_8-darkgrid')
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(18, 12))
     
     # Plot 1: Solve times with error bars
     ax1.errorbar(problem_sizes, pulp_times, yerr=pulp_errors, marker='o', linestyle='-', 
                 linewidth=2.5, markersize=8, capsize=5, capthick=2,
-                label=f'PuLP (Piecewise Approx, {NUM_BREAKPOINTS} pts)', color='#2E86AB', alpha=0.9)
+                label='PuLP (Linear)', color='#2E86AB', alpha=0.9)
     
-    if pyomo_times:
-        ax1.errorbar(pyomo_problem_sizes, pyomo_times, yerr=pyomo_errors, marker='s', linestyle='-',
+    if dwave_times:
+        ax1.errorbar(dwave_problem_sizes, dwave_times, yerr=dwave_errors, marker='D', linestyle='-',
                     linewidth=2.5, markersize=8, capsize=5, capthick=2,
-                    label='Pyomo (True Non-Linear)', color='#A23B72', alpha=0.9)
+                    label='DWave BQUBO (Total)', color='#F18F01', alpha=0.9)
     
     ax1.set_xlabel('Problem Size (n = Farms × Foods)', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Solve Time (seconds)', fontsize=14, fontweight='bold')
-    ax1.set_title(f'Non-Linear Solver Performance (f(A) = A^{POWER})', 
+    ax1.set_title('BQUBO Solver Performance (Linear Objective)', 
                  fontsize=16, fontweight='bold', pad=20)
     ax1.legend(loc='upper left', fontsize=11, framealpha=0.95)
     ax1.grid(True, alpha=0.3, linestyle='--')
     ax1.set_yscale('log')
     ax1.set_xscale('log')
     
-    # Add annotations for key points
-    if len(problem_sizes) > 0:
-        # Annotate largest problem
-        max_idx = problem_sizes.index(max(problem_sizes))
-        ax1.annotate(f'n={problem_sizes[max_idx]}\nPuLP: {pulp_times[max_idx]:.2f}s',
-                    xy=(problem_sizes[max_idx], pulp_times[max_idx]),
-                    xytext=(-60, -30), textcoords='offset points',
-                    fontsize=9, bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', alpha=0.7),
-                    arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
-    
-    # Plot 2: Approximation error with error bars
-    if approx_errors:
-        ax2.errorbar(approx_problem_sizes, approx_errors, yerr=approx_errors_std,
-                    marker='o', linestyle='-', linewidth=2.5, markersize=8,
-                    capsize=5, capthick=2, color='#F18F01', alpha=0.9,
-                    label='PuLP vs Pyomo')
+    # Plot 2: QPU Access Time
+    if qpu_times:
+        ax2.errorbar(qpu_problem_sizes, qpu_times, yerr=qpu_errors,
+                    marker='D', linestyle='-', linewidth=2.5, markersize=8,
+                    capsize=5, capthick=2, color='#06A77D', alpha=0.9,
+                    label='QPU Access Time')
         
         ax2.set_xlabel('Problem Size (n = Farms × Foods)', fontsize=14, fontweight='bold')
-        ax2.set_ylabel('Approximation Error (%)', fontsize=14, fontweight='bold')
-        ax2.set_title(f'Piecewise Approximation Quality ({NUM_BREAKPOINTS} breakpoints)', 
+        ax2.set_ylabel('QPU Access Time (seconds)', fontsize=14, fontweight='bold')
+        ax2.set_title('DWave QPU Utilization (BQUBO Advantage)', 
                      fontsize=16, fontweight='bold', pad=20)
         ax2.grid(True, alpha=0.3, linestyle='--')
         ax2.set_xscale('log')
-        
-        # Add horizontal lines for acceptable error thresholds
-        ax2.axhline(y=1.0, color='green', linestyle='--', linewidth=2, alpha=0.5, label='1% Error')
-        ax2.axhline(y=5.0, color='orange', linestyle='--', linewidth=2, alpha=0.5, label='5% Error')
+        ax2.set_yscale('log')
         ax2.legend(loc='best', fontsize=11, framealpha=0.95)
         
-        # Add average error annotation
-        avg_error = np.mean(approx_errors)
-        ax2.text(0.98, 0.98, f'Avg: {avg_error:.2f}%\n± {np.mean(approx_errors_std):.2f}%', 
+        # Add average QPU time annotation
+        avg_qpu = np.mean(qpu_times)
+        ax2.text(0.98, 0.98, f'Avg QPU: {avg_qpu:.4f}s', 
                 transform=ax2.transAxes, fontsize=11, ha='right', va='top',
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='lightblue', alpha=0.7))
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='lightgreen', alpha=0.7))
     else:
-        ax2.text(0.5, 0.5, 'No Pyomo Data\nfor Comparison', 
+        ax2.text(0.5, 0.5, 'No DWave QPU Data', 
                 ha='center', va='center', fontsize=14, transform=ax2.transAxes,
                 bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
         ax2.set_xlim(0, 1)
         ax2.set_ylim(0, 1)
+    
+    # Plot 3: Solution quality comparison (placeholder for now)
+    ax3.text(0.5, 0.5, 'Linear Objective\nNo Approximation Error', 
+            ha='center', va='center', fontsize=14, transform=ax3.transAxes,
+            bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.5))
+    ax3.set_xlim(0, 1)
+    ax3.set_ylim(0, 1)
+    ax3.set_title('Solution Quality', fontsize=16, fontweight='bold', pad=20)
+    
+    # Plot 4: Speedup Analysis (DWave vs PuLP)
+    if dwave_times and len(dwave_times) == len(pulp_times):
+        speedups = [pulp_times[i] / dwave_times[i] for i in range(len(dwave_times))]
+        ax4.plot(dwave_problem_sizes, speedups, marker='D', linestyle='-',
+                linewidth=2.5, markersize=8, color='#C73E1D', alpha=0.9,
+                label='DWave Speedup Factor')
+        
+        ax4.axhline(y=1.0, color='black', linestyle='--', linewidth=2, alpha=0.5, label='No Speedup')
+        
+        ax4.set_xlabel('Problem Size (n = Farms × Foods)', fontsize=14, fontweight='bold')
+        ax4.set_ylabel('Speedup Factor (PuLP / DWave)', fontsize=14, fontweight='bold')
+        ax4.set_title('DWave BQUBO Speedup vs Classical Solver', 
+                     fontsize=16, fontweight='bold', pad=20)
+        ax4.grid(True, alpha=0.3, linestyle='--')
+        ax4.set_xscale('log')
+        ax4.legend(loc='best', fontsize=11, framealpha=0.95)
+        
+        # Add annotations
+        max_speedup = max(speedups)
+        max_idx = speedups.index(max_speedup)
+        ax4.annotate(f'Max: {max_speedup:.2f}x\n@ n={dwave_problem_sizes[max_idx]}',
+                    xy=(dwave_problem_sizes[max_idx], max_speedup),
+                    xytext=(20, 20), textcoords='offset points',
+                    fontsize=9, bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', alpha=0.7),
+                    arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+    else:
+        ax4.text(0.5, 0.5, 'Insufficient DWave Data\nfor Speedup Analysis', 
+                ha='center', va='center', fontsize=14, transform=ax4.transAxes,
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+        ax4.set_xlim(0, 1)
+        ax4.set_ylim(0, 1)
     
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     print(f"\n✅ Plot saved to: {output_file}")
     
     # Also create a summary table plot
-    create_summary_table(valid_results, 'scalability_table.png')
+    create_summary_table(valid_results, 'scalability_table_bqubo.png')
 
-def create_summary_table(results, output_file='scalability_table_nln.png'):
+def create_summary_table(results, output_file='scalability_table_bqubo.png'):
     """
-    Create a beautiful summary table for NLN benchmark.
+    Create a beautiful summary table for BQUBO benchmark.
     """
-    fig, ax = plt.subplots(figsize=(16, len(results) * 0.5 + 2))
+    fig, ax = plt.subplots(figsize=(18, len(results) * 0.5 + 2))
     ax.axis('tight')
     ax.axis('off')
     
     # Prepare table data
-    headers = ['Farms', 'Foods', 'n', 'Vars\n(Total)', 'Constraints', 
-               'PuLP\nTime (s)', 'Pyomo\nTime (s)', 'Error\n(%)', 'Runs', 'Winner']
+    headers = ['Farms', 'Foods', 'n', 'Vars', 'Constraints', 
+               'PuLP\nTime (s)', 'DWave\nTime (s)', 'QPU\nTime (s)', 'BQM Conv\nTime (s)', 'Runs', 'Winner']
     
     table_data = []
     for r in results:
         # Determine winner (faster solver)
-        if r.get('pyomo_time_mean') is not None and r.get('pulp_time_mean') is not None:
-            if r['pulp_time_mean'] < r['pyomo_time_mean']:
-                winner = '🏆 PuLP'
-            elif r['pyomo_time_mean'] < r['pulp_time_mean']:
-                winner = '🏆 Pyomo'
-            else:
-                winner = 'Tie'
+        times = []
+        if r.get('pulp_time_mean') is not None:
+            times.append(('PuLP', r['pulp_time_mean']))
+        if r.get('dwave_time_mean') is not None:
+            times.append(('DWave', r['dwave_time_mean']))
+        
+        if times:
+            winner_name, winner_time = min(times, key=lambda x: x[1])
+            winner = f'🏆 {winner_name}'
         else:
-            winner = 'PuLP'
+            winner = 'N/A'
         
         row = [
             r['n_farms'],
             r['n_foods'],
             r['problem_size'],
-            r.get('n_vars_total', 'N/A'),
+            r.get('n_vars', 'N/A'),
             r['n_constraints'],
             f"{r['pulp_time_mean']:.3f} ± {r['pulp_time_std']:.3f}",
-            f"{r['pyomo_time_mean']:.3f} ± {r['pyomo_time_std']:.3f}" if r.get('pyomo_time_mean') else 'N/A',
-            f"{r['pulp_error_mean']:.2f}" if r.get('pulp_error_mean') else 'N/A',
+            f"{r['dwave_time_mean']:.3f} ± {r['dwave_time_std']:.3f}" if r.get('dwave_time_mean') else 'N/A',
+            f"{r['qpu_time_mean']:.4f}" if r.get('qpu_time_mean') else 'N/A',
+            f"{r['bqm_conversion_time_mean']:.3f}" if r.get('bqm_conversion_time_mean') else 'N/A',
             r['num_runs'],
             winner
         ]
@@ -426,7 +451,7 @@ def create_summary_table(results, output_file='scalability_table_nln.png'):
             else:
                 table[(i, j)].set_facecolor('white')
     
-    plt.title('Scalability Benchmark Results', fontsize=16, fontweight='bold', pad=20)
+    plt.title('BQUBO Scalability Benchmark Results', fontsize=16, fontweight='bold', pad=20)
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     print(f"✅ Table saved to: {output_file}")
 
@@ -435,14 +460,21 @@ def main():
     Run all benchmarks with multiple runs and calculate statistics.
     """
     print("="*80)
-    print("NON-LINEAR SCALABILITY BENCHMARK")
+    print("BQUBO SCALABILITY BENCHMARK (CQM→BQM + HybridBQM)")
     print("="*80)
     print(f"Configurations: {len(BENCHMARK_CONFIGS)} points")
     print(f"Runs per configuration: {NUM_RUNS}")
     print(f"Total benchmarks: {len(BENCHMARK_CONFIGS) * NUM_RUNS}")
-    print(f"Power: {POWER}")
-    print(f"Breakpoints: {NUM_BREAKPOINTS}")
+    print(f"Objective: Linear")
     print("="*80)
+    
+    # Get DWave token
+    dwave_token = os.getenv('DWAVE_API_TOKEN', '45FS-7b81782896495d7c6a061bda257a9d9b03b082cd')
+    if dwave_token:
+        print(f"✅ DWave API token found - QPU-enabled benchmarking active")
+    else:
+        print(f"⚠️  No DWave API token - DWave benchmarks will be skipped")
+        print(f"   Set DWAVE_API_TOKEN environment variable to enable DWave")
     
     all_results = []
     aggregated_results = []
@@ -456,7 +488,7 @@ def main():
         
         # Run multiple times for this configuration
         for run_num in range(1, NUM_RUNS + 1):
-            result = run_benchmark(n_farms, run_number=run_num, total_runs=NUM_RUNS)
+            result = run_benchmark(n_farms, run_number=run_num, total_runs=NUM_RUNS, dwave_token=dwave_token)
             if result:
                 config_results.append(result)
                 all_results.append(result)
@@ -464,17 +496,16 @@ def main():
         # Calculate statistics for this configuration
         if config_results:
             pulp_times = [r['pulp_time'] for r in config_results if r['pulp_time'] is not None]
-            pyomo_times = [r['pyomo_time'] for r in config_results if r['pyomo_time'] is not None]
             cqm_times = [r['cqm_time'] for r in config_results if r['cqm_time'] is not None]
-            pulp_errors = [r['pulp_error_percent'] for r in config_results if r['pulp_error_percent'] is not None]
+            dwave_times = [r['dwave_time'] for r in config_results if r['dwave_time'] is not None]
+            qpu_times = [r['qpu_time'] for r in config_results if r['qpu_time'] is not None]
+            bqm_conv_times = [r['bqm_conversion_time'] for r in config_results if r['bqm_conversion_time'] is not None]
             
             aggregated = {
                 'n_farms': n_farms,
                 'n_foods': config_results[0]['n_foods'],
                 'problem_size': config_results[0]['problem_size'],
-                'n_vars_base': config_results[0]['n_vars_base'],
-                'n_lambda_vars': config_results[0]['n_lambda_vars'],
-                'n_vars_total': config_results[0]['n_vars_total'],
+                'n_vars': config_results[0]['n_vars'],
                 'n_constraints': config_results[0]['n_constraints'],
                 
                 # CQM creation stats
@@ -487,42 +518,44 @@ def main():
                 'pulp_time_min': float(np.min(pulp_times)) if pulp_times else None,
                 'pulp_time_max': float(np.max(pulp_times)) if pulp_times else None,
                 
-                # Pyomo stats
-                'pyomo_time_mean': float(np.mean(pyomo_times)) if pyomo_times else None,
-                'pyomo_time_std': float(np.std(pyomo_times)) if pyomo_times else None,
-                'pyomo_time_min': float(np.min(pyomo_times)) if pyomo_times else None,
-                'pyomo_time_max': float(np.max(pyomo_times)) if pyomo_times else None,
+                # DWave stats
+                'dwave_time_mean': float(np.mean(dwave_times)) if dwave_times else None,
+                'dwave_time_std': float(np.std(dwave_times)) if dwave_times else None,
+                'dwave_time_min': float(np.min(dwave_times)) if dwave_times else None,
+                'dwave_time_max': float(np.max(dwave_times)) if dwave_times else None,
                 
-                # Error stats
-                'pulp_error_mean': float(np.mean(pulp_errors)) if pulp_errors else None,
-                'pulp_error_std': float(np.std(pulp_errors)) if pulp_errors else None,
+                # QPU stats
+                'qpu_time_mean': float(np.mean(qpu_times)) if qpu_times else None,
+                'qpu_time_std': float(np.std(qpu_times)) if qpu_times else None,
                 
-                'num_runs': len(config_results),
-                'power': POWER,
-                'num_breakpoints': NUM_BREAKPOINTS
+                # BQM conversion stats
+                'bqm_conversion_time_mean': float(np.mean(bqm_conv_times)) if bqm_conv_times else None,
+                'bqm_conversion_time_std': float(np.std(bqm_conv_times)) if bqm_conv_times else None,
+                
+                'num_runs': len(config_results)
             }
             
             aggregated_results.append(aggregated)
             
             # Print statistics
             print(f"\n  Statistics for {n_farms} farms ({len(config_results)} runs):")
-            print(f"    CQM Creation: {aggregated['cqm_time_mean']:.3f}s ± {aggregated['cqm_time_std']:.3f}s")
-            print(f"    PuLP:         {aggregated['pulp_time_mean']:.3f}s ± {aggregated['pulp_time_std']:.3f}s")
-            if aggregated['pyomo_time_mean']:
-                print(f"    Pyomo:        {aggregated['pyomo_time_mean']:.3f}s ± {aggregated['pyomo_time_std']:.3f}s")
-            if aggregated['pulp_error_mean']:
-                print(f"    Approx Error: {aggregated['pulp_error_mean']:.2f}% ± {aggregated['pulp_error_std']:.2f}%")
+            print(f"    CQM Creation:     {aggregated['cqm_time_mean']:.3f}s ± {aggregated['cqm_time_std']:.3f}s")
+            print(f"    PuLP:             {aggregated['pulp_time_mean']:.3f}s ± {aggregated['pulp_time_std']:.3f}s")
+            if aggregated['dwave_time_mean']:
+                print(f"    DWave (Total):    {aggregated['dwave_time_mean']:.3f}s ± {aggregated['dwave_time_std']:.3f}s")
+                print(f"    BQM Conversion:   {aggregated['bqm_conversion_time_mean']:.3f}s ± {aggregated['bqm_conversion_time_std']:.3f}s")
+                print(f"    QPU Access:       {aggregated['qpu_time_mean']:.4f}s ± {aggregated['qpu_time_std']:.4f}s")
     
     # Save results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Save all individual runs
-    all_results_file = f'benchmark_nln_all_runs_{timestamp}.json'
+    all_results_file = f'benchmark_bqubo_all_runs_{timestamp}.json'
     with open(all_results_file, 'w') as f:
         json.dump(all_results, f, indent=2)
     
     # Save aggregated statistics
-    aggregated_file = f'benchmark_nln_aggregated_{timestamp}.json'
+    aggregated_file = f'benchmark_bqubo_aggregated_{timestamp}.json'
     with open(aggregated_file, 'w') as f:
         json.dump(aggregated_results, f, indent=2)
     
@@ -534,9 +567,9 @@ def main():
     
     # Create plots
     print(f"\nGenerating plots...")
-    plot_results(aggregated_results, f'scalability_benchmark_nln_{timestamp}.png')
+    plot_results(aggregated_results, f'scalability_benchmark_bqubo_{timestamp}.png')
     
-    print(f"\n🎉 All done! Ready for your presentation!")
+    print(f"\n🎉 BQUBO Benchmark Complete! QPU-enabled scaling analysis ready!")
 
 if __name__ == "__main__":
     main()

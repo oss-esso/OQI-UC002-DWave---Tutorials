@@ -1,0 +1,25 @@
+{
+  "status": "Optimal",
+  "objective_value": 0.15833333333333333,
+  "solve_time": 0.015256881713867188,
+  "plantations": {
+    "Farm1_Wheat": 1.0,
+    "Farm1_Corn": 1.0,
+    "Farm1_Rice": 1.0,
+    "Farm1_Soybeans": 1.0,
+    "Farm1_Potatoes": 1.0,
+    "Farm1_Apples": 1.0,
+    "Farm2_Wheat": 1.0,
+    "Farm2_Corn": 1.0,
+    "Farm2_Rice": 1.0,
+    "Farm2_Soybeans": 1.0,
+    "Farm2_Potatoes": 1.0,
+    "Farm2_Apples": 1.0,
+    "Farm3_Wheat": 1.0,
+    "Farm3_Corn": 1.0,
+    "Farm3_Rice": 1.0,
+    "Farm3_Soybeans": 1.0,
+    "Farm3_Potatoes": 1.0,
+    "Farm3_Apples": 1.0
+  }
+}

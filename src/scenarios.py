@@ -87,6 +87,26 @@ def _load_simple_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Di
         'Fruits': ['Apples']
     }
     
+    # --- Generate synergy matrix ---
+    synergy_matrix = {}
+    default_boost = 0.1  # A default boost value for pairs in the same group
+
+    for group_name, crops_in_group in food_groups.items():
+        for i in range(len(crops_in_group)):
+            for j in range(i + 1, len(crops_in_group)):
+                crop1 = crops_in_group[i]
+                crop2 = crops_in_group[j]
+
+                if crop1 not in synergy_matrix:
+                    synergy_matrix[crop1] = {}
+                if crop2 not in synergy_matrix:
+                    synergy_matrix[crop2] = {}
+
+                # Add symmetric entries for the pair
+                synergy_matrix[crop1][crop2] = default_boost
+                synergy_matrix[crop2][crop1] = default_boost
+    # --- End synergy matrix generation ---
+    
     # Set parameters
     parameters = {
         'weights': {
@@ -94,14 +114,16 @@ def _load_simple_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Di
             'nutrient_density': 0.25,
             'affordability': 0,
             'sustainability': 0,
-            'environmental_impact': 0.5
+            'environmental_impact': 0.5,
+            'synergy_bonus': 0.1  # New weight for synergy bonus
         },
         'land_availability': {
             'Farm1': 75,
             'Farm2': 100,
             'Farm3': 50
         },
-        'food_groups': food_groups
+        'food_groups': food_groups,
+        'synergy_matrix': synergy_matrix
     }
     
     # Update config
@@ -171,6 +193,26 @@ def _load_intermediate_food_data() -> Tuple[List[str], Dict[str, Dict[str, float
         'Fruits': ['Apples']
     }
     
+    # --- Generate synergy matrix ---
+    synergy_matrix = {}
+    default_boost = 0.1  # A default boost value for pairs in the same group
+
+    for group_name, crops_in_group in food_groups.items():
+        for i in range(len(crops_in_group)):
+            for j in range(i + 1, len(crops_in_group)):
+                crop1 = crops_in_group[i]
+                crop2 = crops_in_group[j]
+
+                if crop1 not in synergy_matrix:
+                    synergy_matrix[crop1] = {}
+                if crop2 not in synergy_matrix:
+                    synergy_matrix[crop2] = {}
+
+                # Add symmetric entries for the pair
+                synergy_matrix[crop1][crop2] = default_boost
+                synergy_matrix[crop2][crop1] = default_boost
+    # --- End synergy matrix generation ---
+    
     # Set parameters with updated configuration
     parameters = {
         'weights': {
@@ -178,7 +220,8 @@ def _load_intermediate_food_data() -> Tuple[List[str], Dict[str, Dict[str, float
             'nutrient_density': 0.2,
             'affordability': 0.15,
             'sustainability': 0.15,
-            'environmental_impact': 0.25
+            'environmental_impact': 0.25,
+            'synergy_bonus': 0.1  # New weight for synergy bonus
         },
         'land_availability': {
             'Farm1': 75,
@@ -205,7 +248,8 @@ def _load_intermediate_food_data() -> Tuple[List[str], Dict[str, Dict[str, float
                 'max_foods': len(foods_in_group)  # Up to all foods in group
             }
             for group, foods_in_group in food_groups.items()
-        }
+        },
+        'synergy_matrix': synergy_matrix
     }
     
     # Update config with additional solver settings
@@ -286,6 +330,26 @@ def _load_custom_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Di
         'Fruits': ['Apples', 'Tomatoes']  # Treating tomatoes as fruits for this scenario
     }
     
+    # --- Generate synergy matrix ---
+    synergy_matrix = {}
+    default_boost = 0.1  # A default boost value for pairs in the same group
+
+    for group_name, crops_in_group in food_groups.items():
+        for i in range(len(crops_in_group)):
+            for j in range(i + 1, len(crops_in_group)):
+                crop1 = crops_in_group[i]
+                crop2 = crops_in_group[j]
+
+                if crop1 not in synergy_matrix:
+                    synergy_matrix[crop1] = {}
+                if crop2 not in synergy_matrix:
+                    synergy_matrix[crop2] = {}
+
+                # Add symmetric entries for the pair
+                synergy_matrix[crop1][crop2] = default_boost
+                synergy_matrix[crop2][crop1] = default_boost
+    # --- End synergy matrix generation ---
+    
     # Set parameters with updated configuration (same as intermediate)
     parameters = {
         'weights': {
@@ -293,7 +357,8 @@ def _load_custom_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Di
             'nutrient_density': 0.2,
             'affordability': 0.15,
             'sustainability': 0.15,
-            'environmental_impact': 0.25
+            'environmental_impact': 0.25,
+            'synergy_bonus': 0.1  # New weight for synergy bonus
         },
         'land_availability': {
             'Farm1': 75,
@@ -324,7 +389,8 @@ def _load_custom_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Di
         'global_min_different_foods': 5,  # Minimum number of different food types selected globally
         'min_foods_per_farm': 1,  # Minimum number of different foods per farm
         'max_foods_per_farm': 6,  # Maximum number of different foods per farm (all 6 foods)
-        'min_total_land_usage_percentage': 0.5  # Minimum 50% total land utilization
+        'min_total_land_usage_percentage': 0.5,  # Minimum 50% total land utilization
+        'synergy_matrix': synergy_matrix
     }
     
     # Update config with additional solver settings (same as intermediate)
@@ -415,6 +481,26 @@ def _load_full_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict
         fg = row['Food_Group'] or 'Unknown'
         food_groups.setdefault(fg, []).append(row['Food_Name'])
     
+    # --- Generate synergy matrix ---
+    synergy_matrix = {}
+    default_boost = 0.1  # A default boost value for pairs in the same group
+
+    for group_name, crops_in_group in food_groups.items():
+        for i in range(len(crops_in_group)):
+            for j in range(i + 1, len(crops_in_group)):
+                crop1 = crops_in_group[i]
+                crop2 = crops_in_group[j]
+
+                if crop1 not in synergy_matrix:
+                    synergy_matrix[crop1] = {}
+                if crop2 not in synergy_matrix:
+                    synergy_matrix[crop2] = {}
+
+                # Add symmetric entries for the pair
+                synergy_matrix[crop1][crop2] = default_boost
+                synergy_matrix[crop2][crop1] = default_boost
+    # --- End synergy matrix generation ---
+    
     # Default config parameters
     parameters = {
         'land_availability': {
@@ -454,8 +540,10 @@ def _load_full_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]], Dict
             'nutrient_density': 0.2,
             'environmental_impact': 0.25,
             'affordability': 0.15,
-            'sustainability': 0.15
-        }
+            'sustainability': 0.15,
+            'synergy_bonus': 0.1  # New weight for synergy bonus
+        },
+        'synergy_matrix': synergy_matrix
     }
     
     
@@ -565,6 +653,26 @@ def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]
             print("Using intermediate scenario foods as fallback...")
             _, foods, food_groups, _ = _load_intermediate_food_data()
     
+    # --- Generate synergy matrix ---
+    synergy_matrix = {}
+    default_boost = 0.1  # A default boost value for pairs in the same group
+
+    for group_name, crops_in_group in food_groups.items():
+        for i in range(len(crops_in_group)):
+            for j in range(i + 1, len(crops_in_group)):
+                crop1 = crops_in_group[i]
+                crop2 = crops_in_group[j]
+
+                if crop1 not in synergy_matrix:
+                    synergy_matrix[crop1] = {}
+                if crop2 not in synergy_matrix:
+                    synergy_matrix[crop2] = {}
+
+                # Add symmetric entries for the pair
+                synergy_matrix[crop1][crop2] = default_boost
+                synergy_matrix[crop2][crop1] = default_boost
+    # --- End synergy matrix generation ---
+    
     # Adjusted minimum planting areas (reduced to fit small farms)
     
     min_areas = {}
@@ -589,8 +697,10 @@ def _load_full_family_food_data() -> Tuple[List[str], Dict[str, Dict[str, float]
             'nutrient_density': 0.2,
             'environmental_impact': 0.25,
             'affordability': 0.15,
-            'sustainability': 0.15
-        }
+            'sustainability': 0.15,
+            'synergy_bonus': 0.1  # New weight for synergy bonus
+        },
+        'synergy_matrix': synergy_matrix
     }
     
     config = {

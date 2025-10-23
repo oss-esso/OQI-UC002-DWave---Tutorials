@@ -1,5 +1,5 @@
 """
-Scalability Benchmark Script
+Scalability Benchmark Script for Linear-Quadratic (LQ) Solver
 Tests different combinations of farms and food groups to analyze solver performance
 """
 import os
@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from farm_sampler import generate_farms
 from src.scenarios import load_food_data
-from solver_runner_NLN import create_cqm, solve_with_pulp, solve_with_pyomo, solve_with_dwave
+from solver_runner_LQ import create_cqm, solve_with_pulp, solve_with_pyomo, solve_with_dwave
 import pulp as pl
 
 # Benchmark configurations
@@ -23,20 +23,16 @@ import pulp as pl
 # 6 points logarithmically scaled from 5 to 1535 farms
 # Reduced from 30 points for faster testing with multiple runs
 BENCHMARK_CONFIGS = [
-    72
+    5, 19, 72, 279, 1096, 1535
 ]
 
 # Number of runs per configuration for statistical analysis
 NUM_RUNS = 5
 
-# Power for non-linear objective
-POWER = 0.548
-NUM_BREAKPOINTS = 10  # For piecewise approximation
-
 def load_full_family_with_n_farms(n_farms, seed=42):
     """
     Load full_family scenario with specified number of farms.
-    Uses the same logic as the scaling analysis.
+    Uses the same logic as the scaling analysis but with synergy matrix.
     """
     import pandas as pd
     
@@ -117,6 +113,26 @@ def load_full_family_with_n_farms(n_farms, seed=42):
                 food_groups[g] = []
             food_groups[g].append(fname)
     
+    # --- Generate synergy matrix (NEW for LQ solver) ---
+    synergy_matrix = {}
+    default_boost = 0.1  # A default boost value for pairs in the same group
+
+    for group_name, crops_in_group in food_groups.items():
+        for i in range(len(crops_in_group)):
+            for j in range(i + 1, len(crops_in_group)):
+                crop1 = crops_in_group[i]
+                crop2 = crops_in_group[j]
+
+                if crop1 not in synergy_matrix:
+                    synergy_matrix[crop1] = {}
+                if crop2 not in synergy_matrix:
+                    synergy_matrix[crop2] = {}
+
+                # Add symmetric entries for the pair
+                synergy_matrix[crop1][crop2] = default_boost
+                synergy_matrix[crop2][crop1] = default_boost
+    # --- End synergy matrix generation ---
+    
     # Set minimum planting areas based on smallest farm and number of food groups
     smallest_farm = min(L.values())
     n_food_groups = len(food_groups)
@@ -126,7 +142,7 @@ def load_full_family_with_n_farms(n_farms, seed=42):
     
     min_areas = {food: min_area_per_crop for food in foods.keys()}
     
-    # Build config
+    # Build config with synergy matrix
     parameters = {
         'land_availability': L,
         'minimum_planting_area': min_areas,
@@ -141,8 +157,10 @@ def load_full_family_with_n_farms(n_farms, seed=42):
             'nutrient_density': 0.2,
             'environmental_impact': 0.25,
             'affordability': 0.15,
-            'sustainability': 0.15
-        }
+            'sustainability': 0.15,
+            'synergy_bonus': 0.1  # NEW weight for synergy bonus
+        },
+        'synergy_matrix': synergy_matrix  # NEW parameter
     }
     
     config = {'parameters': parameters}
@@ -151,7 +169,7 @@ def load_full_family_with_n_farms(n_farms, seed=42):
 
 def run_benchmark(n_farms, run_number=1, total_runs=1):
     """
-    Run a single benchmark test with full_family scenario.
+    Run a single benchmark test with full_family scenario using LQ solver.
     Returns timing results and problem size metrics for all three solvers.
     
     Args:
@@ -168,44 +186,59 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
         farms, foods, food_groups, config = load_full_family_with_n_farms(n_farms, seed=42 + run_number)
         
         n_foods = len(foods)
-        # For NLN solver, we have additional lambda variables
+        # For LQ solver, we don't have lambda variables (simpler than NLN)
         n_vars_base = 2 * n_farms * n_foods  # Binary + continuous (A and Y)
-        n_lambda_vars = n_farms * n_foods * (NUM_BREAKPOINTS + 2)  # Lambda variables for piecewise
-        n_vars = n_vars_base + n_lambda_vars
-        n_constraints = n_farms + 2*n_farms*n_foods + 2*len(food_groups)*n_farms + 2*n_farms*n_foods  # Added piecewise constraints
+        
+        # Count synergy pairs (for PuLP linearization, we add Z variables)
+        synergy_matrix = config['parameters'].get('synergy_matrix', {})
+        n_synergy_pairs = 0
+        for crop1, pairs in synergy_matrix.items():
+            n_synergy_pairs += len(pairs)
+        n_synergy_pairs = n_synergy_pairs // 2  # Each pair counted twice
+        
+        n_z_vars_pulp = n_farms * n_synergy_pairs  # Z variables for PuLP linearization
+        n_vars_pulp = n_vars_base + n_z_vars_pulp
+        n_vars_quadratic = n_vars_base  # For CQM and Pyomo (native quadratic)
+        
+        n_constraints_base = n_farms + 2*n_farms*n_foods + 2*len(food_groups)*n_farms
+        n_linearization_constraints = n_z_vars_pulp * 3  # 3 constraints per Z variable (McCormick)
+        n_constraints_pulp = n_constraints_base + n_linearization_constraints
+        n_constraints_quadratic = n_constraints_base
+        
         problem_size = n_farms * n_foods  # n = farms × foods
         
         print(f"  Foods: {n_foods}")
-        print(f"  Base Variables: {n_vars_base}")
-        print(f"  Lambda Variables: {n_lambda_vars}")
-        print(f"  Total Variables: {n_vars}")
-        print(f"  Constraints: {n_constraints}")
+        print(f"  Synergy Pairs: {n_synergy_pairs}")
+        print(f"  Base Variables (A+Y): {n_vars_base}")
+        print(f"  PuLP Variables (A+Y+Z): {n_vars_pulp}")
+        print(f"  CQM/Pyomo Variables: {n_vars_quadratic}")
+        print(f"  PuLP Constraints: {n_constraints_pulp}")
+        print(f"  CQM/Pyomo Constraints: {n_constraints_quadratic}")
         print(f"  Problem Size (n): {problem_size}")
         
-        # Create CQM (needed for DWave, but we'll skip DWave solving)
+        # Create CQM (needed for DWave)
         print(f"\n  Creating CQM model...")
         cqm_start = time.time()
-        cqm, A, Y, Lambda, constraint_metadata, approximation_metadata = create_cqm(
-            farms, foods, food_groups, config, power=POWER, num_breakpoints=NUM_BREAKPOINTS
+        cqm, A, Y, constraint_metadata = create_cqm(
+            farms, foods, food_groups, config
         )
         cqm_time = time.time() - cqm_start
         print(f"    ✅ CQM created: {len(cqm.variables)} vars, {len(cqm.constraints)} constraints ({cqm_time:.2f}s)")
         
-        # Solve with PuLP (piecewise approximation)
-        print(f"\n  Solving with PuLP (Piecewise Approximation)...")
-        print(f"    Note: For large problems (>10k vars), CBC uses 10min timeout & 5% gap")
+        # Solve with PuLP (linearized quadratic)
+        print(f"\n  Solving with PuLP (Linearized Quadratic)...")
         pulp_start = time.time()
-        pulp_model, pulp_results = solve_with_pulp(farms, foods, food_groups, config, power=POWER, num_breakpoints=NUM_BREAKPOINTS)
+        pulp_model, pulp_results = solve_with_pulp(farms, foods, food_groups, config)
         pulp_time = time.time() - pulp_start
         
         print(f"    Status: {pulp_results['status']}")
         print(f"    Objective: {pulp_results.get('objective_value', 'N/A')}")
         print(f"    Time: {pulp_time:.3f}s")
         
-        # Solve with Pyomo (true non-linear)
-        print(f"\n  Solving with Pyomo (True Non-Linear)...")
+        # Solve with Pyomo (native quadratic)
+        print(f"\n  Solving with Pyomo (Native Quadratic)...")
         pyomo_start = time.time()
-        pyomo_model, pyomo_results = solve_with_pyomo(farms, foods, food_groups, config, power=POWER)
+        pyomo_model, pyomo_results = solve_with_pyomo(farms, foods, food_groups, config)
         pyomo_time = time.time() - pyomo_start
         
         if pyomo_results.get('error'):
@@ -228,20 +261,23 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
         
         print(f"\n  DWave: SKIPPED (no token)")
         
-        # Calculate approximation error if we have Pyomo solution
+        # Calculate difference between PuLP and Pyomo (should be exact)
         pulp_error = None
         if pyomo_objective is not None and pulp_results.get('objective_value') is not None:
             pulp_error = abs(pulp_results['objective_value'] - pyomo_objective) / abs(pyomo_objective) * 100
-            print(f"\n  Approximation Error:")
-            print(f"    PuLP vs Pyomo: {pulp_error:.2f}%")
+            print(f"\n  Solution Comparison:")
+            print(f"    PuLP vs Pyomo: {pulp_error:.4f}% (should be ~0% - exact)")
         
         result = {
             'n_farms': n_farms,
             'n_foods': n_foods,
+            'n_synergy_pairs': n_synergy_pairs,
             'n_vars_base': n_vars_base,
-            'n_lambda_vars': n_lambda_vars,
-            'n_vars_total': n_vars,
-            'n_constraints': n_constraints,
+            'n_z_vars_pulp': n_z_vars_pulp,
+            'n_vars_pulp': n_vars_pulp,
+            'n_vars_quadratic': n_vars_quadratic,
+            'n_constraints_pulp': n_constraints_pulp,
+            'n_constraints_quadratic': n_constraints_quadratic,
             'problem_size': problem_size,
             'cqm_time': cqm_time,
             'pulp_time': pulp_time,
@@ -250,14 +286,12 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
             'pyomo_time': pyomo_time,
             'pyomo_status': pyomo_results.get('status', 'Error'),
             'pyomo_objective': pyomo_objective,
-            'pulp_error_percent': pulp_error,
+            'pulp_diff_percent': pulp_error,
             'dwave_time': dwave_time,
             'qpu_time': qpu_time,
             'hybrid_time': hybrid_time,
             'dwave_feasible': dwave_feasible,
             'dwave_objective': dwave_objective,
-            'power': POWER,
-            'num_breakpoints': NUM_BREAKPOINTS
         }
         
         return result
@@ -268,7 +302,7 @@ def run_benchmark(n_farms, run_number=1, total_runs=1):
         traceback.print_exc()
         return None
 
-def plot_results(results, output_file='scalability_benchmark_nln.png'):
+def plot_results(results, output_file='scalability_benchmark_lq.png'):
     """
     Create beautiful plots for presentation with error bars.
     Results should be aggregated statistics with mean and std.
@@ -292,10 +326,10 @@ def plot_results(results, output_file='scalability_benchmark_nln.png'):
     pyomo_errors = [r['pyomo_time_std'] for r in valid_results if r['pyomo_time_mean'] is not None]
     pyomo_problem_sizes = [r['problem_size'] for r in valid_results if r['pyomo_time_mean'] is not None]
     
-    # Approximation error
-    approx_errors = [r['pulp_error_mean'] for r in valid_results if r['pulp_error_mean'] is not None]
-    approx_errors_std = [r['pulp_error_std'] for r in valid_results if r['pulp_error_mean'] is not None]
-    approx_problem_sizes = [r['problem_size'] for r in valid_results if r['pulp_error_mean'] is not None]
+    # Solution difference (should be near zero)
+    solution_diffs = [r['pulp_diff_mean'] for r in valid_results if r['pulp_diff_mean'] is not None]
+    solution_diffs_std = [r['pulp_diff_std'] for r in valid_results if r['pulp_diff_mean'] is not None]
+    diff_problem_sizes = [r['problem_size'] for r in valid_results if r['pulp_diff_mean'] is not None]
     
     # Create figure with professional styling
     plt.style.use('seaborn-v0_8-darkgrid')
@@ -304,16 +338,16 @@ def plot_results(results, output_file='scalability_benchmark_nln.png'):
     # Plot 1: Solve times with error bars
     ax1.errorbar(problem_sizes, pulp_times, yerr=pulp_errors, marker='o', linestyle='-', 
                 linewidth=2.5, markersize=8, capsize=5, capthick=2,
-                label=f'PuLP (Piecewise Approx, {NUM_BREAKPOINTS} pts)', color='#2E86AB', alpha=0.9)
+                label='PuLP (Linearized)', color='#2E86AB', alpha=0.9)
     
     if pyomo_times:
         ax1.errorbar(pyomo_problem_sizes, pyomo_times, yerr=pyomo_errors, marker='s', linestyle='-',
                     linewidth=2.5, markersize=8, capsize=5, capthick=2,
-                    label='Pyomo (True Non-Linear)', color='#A23B72', alpha=0.9)
+                    label='Pyomo (Native Quadratic)', color='#A23B72', alpha=0.9)
     
     ax1.set_xlabel('Problem Size (n = Farms × Foods)', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Solve Time (seconds)', fontsize=14, fontweight='bold')
-    ax1.set_title(f'Non-Linear Solver Performance (f(A) = A^{POWER})', 
+    ax1.set_title('Linear-Quadratic Solver Performance (Linear + Synergy Bonus)', 
                  fontsize=16, fontweight='bold', pad=20)
     ax1.legend(loc='upper left', fontsize=11, framealpha=0.95)
     ax1.grid(True, alpha=0.3, linestyle='--')
@@ -330,30 +364,30 @@ def plot_results(results, output_file='scalability_benchmark_nln.png'):
                     fontsize=9, bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', alpha=0.7),
                     arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
     
-    # Plot 2: Approximation error with error bars
-    if approx_errors:
-        ax2.errorbar(approx_problem_sizes, approx_errors, yerr=approx_errors_std,
+    # Plot 2: Solution accuracy (should be near zero)
+    if solution_diffs:
+        ax2.errorbar(diff_problem_sizes, solution_diffs, yerr=solution_diffs_std,
                     marker='o', linestyle='-', linewidth=2.5, markersize=8,
-                    capsize=5, capthick=2, color='#F18F01', alpha=0.9,
+                    capsize=5, capthick=2, color='#06A77D', alpha=0.9,
                     label='PuLP vs Pyomo')
         
         ax2.set_xlabel('Problem Size (n = Farms × Foods)', fontsize=14, fontweight='bold')
-        ax2.set_ylabel('Approximation Error (%)', fontsize=14, fontweight='bold')
-        ax2.set_title(f'Piecewise Approximation Quality ({NUM_BREAKPOINTS} breakpoints)', 
+        ax2.set_ylabel('Solution Difference (%)', fontsize=14, fontweight='bold')
+        ax2.set_title('Linearization Accuracy (McCormick Relaxation)', 
                      fontsize=16, fontweight='bold', pad=20)
         ax2.grid(True, alpha=0.3, linestyle='--')
         ax2.set_xscale('log')
         
-        # Add horizontal lines for acceptable error thresholds
-        ax2.axhline(y=1.0, color='green', linestyle='--', linewidth=2, alpha=0.5, label='1% Error')
-        ax2.axhline(y=5.0, color='orange', linestyle='--', linewidth=2, alpha=0.5, label='5% Error')
+        # Add horizontal line at y=0 (perfect match)
+        ax2.axhline(y=0.0, color='green', linestyle='--', linewidth=2, alpha=0.7, label='Exact Match')
+        ax2.axhline(y=0.01, color='orange', linestyle='--', linewidth=1, alpha=0.5, label='0.01% Diff')
         ax2.legend(loc='best', fontsize=11, framealpha=0.95)
         
-        # Add average error annotation
-        avg_error = np.mean(approx_errors)
-        ax2.text(0.98, 0.98, f'Avg: {avg_error:.2f}%\n± {np.mean(approx_errors_std):.2f}%', 
+        # Add average difference annotation
+        avg_diff = np.mean(solution_diffs)
+        ax2.text(0.98, 0.98, f'Avg: {avg_diff:.4f}%\n± {np.mean(solution_diffs_std):.4f}%', 
                 transform=ax2.transAxes, fontsize=11, ha='right', va='top',
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='lightblue', alpha=0.7))
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='lightgreen', alpha=0.7))
     else:
         ax2.text(0.5, 0.5, 'No Pyomo Data\nfor Comparison', 
                 ha='center', va='center', fontsize=14, transform=ax2.transAxes,
@@ -366,19 +400,19 @@ def plot_results(results, output_file='scalability_benchmark_nln.png'):
     print(f"\n✅ Plot saved to: {output_file}")
     
     # Also create a summary table plot
-    create_summary_table(valid_results, 'scalability_table.png')
+    create_summary_table(valid_results, 'scalability_table_lq.png')
 
-def create_summary_table(results, output_file='scalability_table_nln.png'):
+def create_summary_table(results, output_file='scalability_table_lq.png'):
     """
-    Create a beautiful summary table for NLN benchmark.
+    Create a beautiful summary table for LQ benchmark.
     """
-    fig, ax = plt.subplots(figsize=(16, len(results) * 0.5 + 2))
+    fig, ax = plt.subplots(figsize=(18, len(results) * 0.5 + 2))
     ax.axis('tight')
     ax.axis('off')
     
     # Prepare table data
-    headers = ['Farms', 'Foods', 'n', 'Vars\n(Total)', 'Constraints', 
-               'PuLP\nTime (s)', 'Pyomo\nTime (s)', 'Error\n(%)', 'Runs', 'Winner']
+    headers = ['Farms', 'Foods', 'n', 'Synergy\nPairs', 'PuLP\nVars', 'Quad\nVars', 
+               'PuLP\nTime (s)', 'Pyomo\nTime (s)', 'Diff\n(%)', 'Runs', 'Winner']
     
     table_data = []
     for r in results:
@@ -397,11 +431,12 @@ def create_summary_table(results, output_file='scalability_table_nln.png'):
             r['n_farms'],
             r['n_foods'],
             r['problem_size'],
-            r.get('n_vars_total', 'N/A'),
-            r['n_constraints'],
+            r.get('n_synergy_pairs', 'N/A'),
+            r.get('n_vars_pulp', 'N/A'),
+            r.get('n_vars_quadratic', 'N/A'),
             f"{r['pulp_time_mean']:.3f} ± {r['pulp_time_std']:.3f}",
             f"{r['pyomo_time_mean']:.3f} ± {r['pyomo_time_std']:.3f}" if r.get('pyomo_time_mean') else 'N/A',
-            f"{r['pulp_error_mean']:.2f}" if r.get('pulp_error_mean') else 'N/A',
+            f"{r['pulp_diff_mean']:.4f}" if r.get('pulp_diff_mean') else 'N/A',
             r['num_runs'],
             winner
         ]
@@ -426,7 +461,7 @@ def create_summary_table(results, output_file='scalability_table_nln.png'):
             else:
                 table[(i, j)].set_facecolor('white')
     
-    plt.title('Scalability Benchmark Results', fontsize=16, fontweight='bold', pad=20)
+    plt.title('Linear-Quadratic Scalability Benchmark Results', fontsize=16, fontweight='bold', pad=20)
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     print(f"✅ Table saved to: {output_file}")
 
@@ -435,13 +470,12 @@ def main():
     Run all benchmarks with multiple runs and calculate statistics.
     """
     print("="*80)
-    print("NON-LINEAR SCALABILITY BENCHMARK")
+    print("LINEAR-QUADRATIC SCALABILITY BENCHMARK")
     print("="*80)
     print(f"Configurations: {len(BENCHMARK_CONFIGS)} points")
     print(f"Runs per configuration: {NUM_RUNS}")
     print(f"Total benchmarks: {len(BENCHMARK_CONFIGS) * NUM_RUNS}")
-    print(f"Power: {POWER}")
-    print(f"Breakpoints: {NUM_BREAKPOINTS}")
+    print(f"Objective: Linear area + Quadratic synergy bonus")
     print("="*80)
     
     all_results = []
@@ -466,16 +500,19 @@ def main():
             pulp_times = [r['pulp_time'] for r in config_results if r['pulp_time'] is not None]
             pyomo_times = [r['pyomo_time'] for r in config_results if r['pyomo_time'] is not None]
             cqm_times = [r['cqm_time'] for r in config_results if r['cqm_time'] is not None]
-            pulp_errors = [r['pulp_error_percent'] for r in config_results if r['pulp_error_percent'] is not None]
+            pulp_diffs = [r['pulp_diff_percent'] for r in config_results if r['pulp_diff_percent'] is not None]
             
             aggregated = {
                 'n_farms': n_farms,
                 'n_foods': config_results[0]['n_foods'],
                 'problem_size': config_results[0]['problem_size'],
+                'n_synergy_pairs': config_results[0]['n_synergy_pairs'],
                 'n_vars_base': config_results[0]['n_vars_base'],
-                'n_lambda_vars': config_results[0]['n_lambda_vars'],
-                'n_vars_total': config_results[0]['n_vars_total'],
-                'n_constraints': config_results[0]['n_constraints'],
+                'n_z_vars_pulp': config_results[0]['n_z_vars_pulp'],
+                'n_vars_pulp': config_results[0]['n_vars_pulp'],
+                'n_vars_quadratic': config_results[0]['n_vars_quadratic'],
+                'n_constraints_pulp': config_results[0]['n_constraints_pulp'],
+                'n_constraints_quadratic': config_results[0]['n_constraints_quadratic'],
                 
                 # CQM creation stats
                 'cqm_time_mean': float(np.mean(cqm_times)) if cqm_times else None,
@@ -493,13 +530,11 @@ def main():
                 'pyomo_time_min': float(np.min(pyomo_times)) if pyomo_times else None,
                 'pyomo_time_max': float(np.max(pyomo_times)) if pyomo_times else None,
                 
-                # Error stats
-                'pulp_error_mean': float(np.mean(pulp_errors)) if pulp_errors else None,
-                'pulp_error_std': float(np.std(pulp_errors)) if pulp_errors else None,
+                # Solution difference stats (should be near zero)
+                'pulp_diff_mean': float(np.mean(pulp_diffs)) if pulp_diffs else None,
+                'pulp_diff_std': float(np.std(pulp_diffs)) if pulp_diffs else None,
                 
                 'num_runs': len(config_results),
-                'power': POWER,
-                'num_breakpoints': NUM_BREAKPOINTS
             }
             
             aggregated_results.append(aggregated)
@@ -510,19 +545,19 @@ def main():
             print(f"    PuLP:         {aggregated['pulp_time_mean']:.3f}s ± {aggregated['pulp_time_std']:.3f}s")
             if aggregated['pyomo_time_mean']:
                 print(f"    Pyomo:        {aggregated['pyomo_time_mean']:.3f}s ± {aggregated['pyomo_time_std']:.3f}s")
-            if aggregated['pulp_error_mean']:
-                print(f"    Approx Error: {aggregated['pulp_error_mean']:.2f}% ± {aggregated['pulp_error_std']:.2f}%")
+            if aggregated['pulp_diff_mean']:
+                print(f"    Solution Diff: {aggregated['pulp_diff_mean']:.4f}% ± {aggregated['pulp_diff_std']:.4f}%")
     
     # Save results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Save all individual runs
-    all_results_file = f'benchmark_nln_all_runs_{timestamp}.json'
+    all_results_file = f'benchmark_lq_all_runs_{timestamp}.json'
     with open(all_results_file, 'w') as f:
         json.dump(all_results, f, indent=2)
     
     # Save aggregated statistics
-    aggregated_file = f'benchmark_nln_aggregated_{timestamp}.json'
+    aggregated_file = f'benchmark_lq_aggregated_{timestamp}.json'
     with open(aggregated_file, 'w') as f:
         json.dump(aggregated_results, f, indent=2)
     
@@ -534,7 +569,7 @@ def main():
     
     # Create plots
     print(f"\nGenerating plots...")
-    plot_results(aggregated_results, f'scalability_benchmark_nln_{timestamp}.png')
+    plot_results(aggregated_results, f'scalability_benchmark_lq_{timestamp}.png')
     
     print(f"\n🎉 All done! Ready for your presentation!")
 

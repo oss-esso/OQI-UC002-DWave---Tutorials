@@ -1,0 +1,9 @@
+{
+  "status": "Optimal",
+  "objective_value": 0.15833333333333333,
+  "solve_time": 3.2152600288391113,
+  "qpu_access_time": 0.110862,
+  "bqm_conversion_time": 0.003000020980834961,
+  "num_samples": 1,
+  "formulation": "BQUBO (binary only)"
+}
